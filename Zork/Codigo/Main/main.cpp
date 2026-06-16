@@ -2,7 +2,6 @@
 
 int main()
 {
-
 	WestZork westZork;
 	westZork.Run();
 

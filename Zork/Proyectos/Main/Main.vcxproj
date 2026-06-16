@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\Codigo\Main\Entity.h" />
     <ClInclude Include="..\..\Codigo\Main\GameWorld.h" />
     <ClInclude Include="..\..\Codigo\Main\Item.h" />
+    <ClInclude Include="..\..\Codigo\Main\Parser.h" />
     <ClInclude Include="..\..\Codigo\Main\Player.h" />
     <ClInclude Include="..\..\Codigo\Main\Room.h" />
     <ClInclude Include="..\..\Codigo\Main\WestZork.h" />
@@ -96,6 +97,7 @@
     <ClCompile Include="..\..\Codigo\Main\GameWorld.cpp" />
     <ClCompile Include="..\..\Codigo\Main\Item.cpp" />
     <ClCompile Include="..\..\Codigo\Main\main.cpp" />
+    <ClCompile Include="..\..\Codigo\Main\Parser.cpp" />
     <ClCompile Include="..\..\Codigo\Main\Player.cpp" />
     <ClCompile Include="..\..\Codigo\Main\Room.cpp" />
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp" />

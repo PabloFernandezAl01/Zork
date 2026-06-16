@@ -1,5 +1,7 @@
 #include "Item.h"
 
+#include <algorithm>
+
 Item::Item(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
 	, m_isContainer(false)
@@ -49,4 +51,30 @@ void Item::AddItem(const std::shared_ptr<Item>& item)
 		return;
 
 	m_containedItems.push_back(item);
+}
+
+std::shared_ptr<Item> Item::RemoveItem(const std::string& itemId)
+{
+	if (!m_isContainer)
+	{
+		return nullptr;
+	}
+
+	const auto it = std::find_if(m_containedItems.begin(), m_containedItems.end(),
+		[&itemId](const std::shared_ptr<Item>& item)
+		{
+			return item->GetId() == itemId;
+		});
+
+	if (it == m_containedItems.end())
+	{
+		return nullptr;
+	}
+
+	// Same as in Room and Player, it just gets removed from the vector
+	const auto item = *it;
+	m_containedItems.erase(it);
+
+	// The item itself is returned so it can be moved to the player inventory or the room where the player is
+	return item;
 }

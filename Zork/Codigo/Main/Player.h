@@ -18,6 +18,7 @@ public:
 
 	void SetCurrentRoomId(const std::string& roomId);
 	void AddItemToInventory(const std::shared_ptr<Item>& item);
+	std::shared_ptr<Item> RemoveItemFromInventory(const std::string& itemId);
 
 private:
 

@@ -21,6 +21,7 @@ public:
 
 	const std::vector<std::shared_ptr<Item>>& GetContainedItems() const;
 	void AddItem(const std::shared_ptr<Item>& item);
+	std::shared_ptr<Item> RemoveItem(const std::string& itemId);
 
 private:
 

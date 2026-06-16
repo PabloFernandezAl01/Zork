@@ -21,6 +21,12 @@
     <ClInclude Include="..\..\Codigo\Main\Entity.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Codigo\Main\GameWorld.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Codigo\Main\Room.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp">
@@ -30,6 +36,12 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Codigo\Main\Entity.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Codigo\Main\GameWorld.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Codigo\Main\Room.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

@@ -84,6 +84,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Codigo\Main\Entity.h" />
+    <ClInclude Include="..\..\Codigo\Main\WestZork.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Codigo\Main\Entity.cpp" />
+    <ClCompile Include="..\..\Codigo\Main\main.cpp" />
+    <ClCompile Include="..\..\Codigo\Main\WestZork.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

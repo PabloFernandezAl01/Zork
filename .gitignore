@@ -427,3 +427,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Archivos intermedios y ejecutables
+
+Zork/Ejecutables/
+Zork/Intermedio/

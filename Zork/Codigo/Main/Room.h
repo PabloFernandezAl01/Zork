@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "Item.h"
 
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,6 +19,8 @@ enum class Direction
 	Enter,
 	Exit
 };
+
+std::string DirectionToText(Direction direction);
 
 class Room : public Entity
 {
@@ -35,7 +38,10 @@ public:
 	void SetLocked(bool locked);
 
 	const std::map<Direction, std::string>& GetExits() const;
+	bool TryGetExit(Direction direction, std::string& outRoomId) const;
 	const std::vector<std::shared_ptr<Item>>& GetItems() const;
+
+	void PrintInformation(std::ostream& output) const override;
 
 	void AddExit(Direction direction, const std::string& targetRoomId);
 	void AddItem(const std::shared_ptr<Item>& item);

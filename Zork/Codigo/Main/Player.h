@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "Item.h"
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +16,8 @@ public:
 
 	const std::string& GetCurrentRoomId() const;
 	const std::vector<std::shared_ptr<Item>>& GetInventory() const;
+
+	void PrintInformation(std::ostream& output) const override;
 
 	void SetCurrentRoomId(const std::string& roomId);
 	void AddItemToInventory(const std::shared_ptr<Item>& item);

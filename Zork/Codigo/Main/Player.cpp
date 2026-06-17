@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <algorithm>
+#include <ostream>
 
 Player::Player(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
@@ -15,6 +16,23 @@ const std::string& Player::GetCurrentRoomId() const
 const std::vector<std::shared_ptr<Item>>& Player::GetInventory() const
 {
 	return m_inventory;
+}
+
+void Player::PrintInformation(std::ostream& output) const
+{
+	Entity::PrintInformation(output);
+
+	if (m_inventory.empty())
+	{
+		output << "No llevas nada.\n";
+		return;
+	}
+
+	output << "Llevas:\n";
+	for (const std::shared_ptr<Item>& item : m_inventory)
+	{
+		output << "- " << item->GetName() << '\n';
+	}
 }
 
 void Player::SetCurrentRoomId(const std::string& roomId)

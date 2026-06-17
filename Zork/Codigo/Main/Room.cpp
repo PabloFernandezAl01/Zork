@@ -1,6 +1,30 @@
 #include "Room.h"
 
 #include <algorithm>
+#include <ostream>
+
+std::string DirectionToText(Direction direction)
+{
+	switch (direction)
+	{
+	case Direction::North:
+		return "norte";
+	case Direction::South:
+		return "sur";
+	case Direction::East:
+		return "este";
+	case Direction::West:
+		return "oeste";
+	case Direction::Down:
+		return "abajo";
+	case Direction::Enter:
+		return "entrar";
+	case Direction::Exit:
+		return "salir";
+	default:
+		return "desconocida";
+	}
+}
 
 Room::Room(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
@@ -45,9 +69,39 @@ const std::map<Direction, std::string>& Room::GetExits() const
 	return m_exits;
 }
 
+bool Room::TryGetExit(Direction direction, std::string& outRoomId) const
+{
+	const auto it = m_exits.find(direction);
+	if (it == m_exits.end())
+	{
+		return false;
+	}
+
+	outRoomId = it->second;
+	return true;
+}
+
 const std::vector<std::shared_ptr<Item>>& Room::GetItems() const
 {
 	return m_items;
+}
+
+void Room::PrintInformation(std::ostream& output) const
+{
+	Entity::PrintInformation(output);
+
+	if (m_items.empty())
+	{
+		output << "No ves ningun objeto aqui.\n";
+	}
+	else
+	{
+		output << "Ves:\n";
+		for (const std::shared_ptr<Item>& item : m_items)
+		{
+			output << "- " << item->GetName() << '\n';
+		}
+	}
 }
 
 void Room::AddExit(Direction direction, const std::string& targetRoomId)

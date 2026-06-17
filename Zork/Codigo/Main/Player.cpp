@@ -18,6 +18,28 @@ const std::vector<std::shared_ptr<Item>>& Player::GetInventory() const
 	return m_inventory;
 }
 
+Item* Player::FindItem(const std::string& target)
+{
+	const auto it = std::find_if(m_inventory.begin(), m_inventory.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_inventory.end() ? it->get() : nullptr;
+}
+
+const Item* Player::FindItem(const std::string& target) const
+{
+	const auto it = std::find_if(m_inventory.begin(), m_inventory.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_inventory.end() ? it->get() : nullptr;
+}
+
 void Player::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);

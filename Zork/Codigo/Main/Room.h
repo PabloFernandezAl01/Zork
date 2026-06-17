@@ -40,6 +40,8 @@ public:
 	const std::map<Direction, std::string>& GetExits() const;
 	bool TryGetExit(Direction direction, std::string& outRoomId) const;
 	const std::vector<std::shared_ptr<Item>>& GetItems() const;
+	Item* FindItem(const std::string& target);
+	const Item* FindItem(const std::string& target) const;
 
 	void PrintInformation(std::ostream& output) const override;
 

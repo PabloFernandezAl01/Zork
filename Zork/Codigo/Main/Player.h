@@ -8,6 +8,14 @@
 #include <string>
 #include <vector>
 
+/*
+* This class represents the player. It has the information of the room where the player is
+* and the list of items the player has. 
+* 
+* PrintInformation overrides Entity adding the information related to all the names of the items
+* in player's inventory. 
+*/
+
 class Player : public Entity
 {
 public:
@@ -16,6 +24,8 @@ public:
 
 	const std::string& GetCurrentRoomId() const;
 	const std::vector<std::shared_ptr<Item>>& GetInventory() const;
+	Item* FindItem(const std::string& target);
+	const Item* FindItem(const std::string& target) const;
 
 	void PrintInformation(std::ostream& output) const override;
 

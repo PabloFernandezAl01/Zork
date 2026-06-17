@@ -78,6 +78,38 @@ const std::vector<std::shared_ptr<Item>>& Item::GetContainedItems() const
 	return m_containedItems;
 }
 
+Item* Item::FindItem(const std::string& target)
+{
+	if (!m_isContainer)
+	{
+		return nullptr;
+	}
+
+	const auto it = std::find_if(m_containedItems.begin(), m_containedItems.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_containedItems.end() ? it->get() : nullptr;
+}
+
+const Item* Item::FindItem(const std::string& target) const
+{
+	if (!m_isContainer)
+	{
+		return nullptr;
+	}
+
+	const auto it = std::find_if(m_containedItems.begin(), m_containedItems.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_containedItems.end() ? it->get() : nullptr;
+}
+
 void Item::AddItem(const std::shared_ptr<Item>& item) 
 {
 	if (!m_isContainer) 

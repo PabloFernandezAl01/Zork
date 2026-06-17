@@ -44,6 +44,8 @@ public:
 	void AddItem(const std::shared_ptr<Item>& item);
 	std::shared_ptr<Item> RemoveItem(const std::string& itemId);
 	const std::vector<std::shared_ptr<Item>>& GetContainedItems() const;
+	Item* FindItem(const std::string& target);
+	const Item* FindItem(const std::string& target) const;
 
 private:
 

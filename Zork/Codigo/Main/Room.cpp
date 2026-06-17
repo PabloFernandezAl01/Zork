@@ -86,6 +86,28 @@ const std::vector<std::shared_ptr<Item>>& Room::GetItems() const
 	return m_items;
 }
 
+Item* Room::FindItem(const std::string& target)
+{
+	const auto it = std::find_if(m_items.begin(), m_items.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_items.end() ? it->get() : nullptr;
+}
+
+const Item* Room::FindItem(const std::string& target) const
+{
+	const auto it = std::find_if(m_items.begin(), m_items.end(),
+		[&target](const std::shared_ptr<Item>& item)
+		{
+			return item->MatchesTarget(target);
+		});
+
+	return it != m_items.end() ? it->get() : nullptr;
+}
+
 void Room::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);

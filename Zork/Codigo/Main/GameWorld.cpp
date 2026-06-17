@@ -3,17 +3,14 @@
 
 #include <algorithm>
 #include <iostream>
-#include <vector>
 
-Item* GameWorld::FindItemByTarget(const std::vector<std::shared_ptr<Item>>& items, const std::string& target)
+bool GameWorld::IsAValidItem(const std::string& target) const
 {
-	const auto it = std::find_if(items.begin(), items.end(),
-		[&target](const std::shared_ptr<Item>& item)
+	return std::find_if(m_items.begin(), m_items.end(),
+		[&target](const std::pair<const std::string, std::shared_ptr<Item>>& itemEntry)
 		{
-			return item->MatchesTarget(target);
-		});
-
-	return it != items.end() ? it->get() : nullptr;
+			return itemEntry.second->MatchesTarget(target);
+		}) != m_items.end();
 }
 
 GameWorld::GameWorld()
@@ -45,7 +42,7 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 		DropItem(command.firstTarget, isRunning, output);
 		break;
 	case CommandType::Put:
-		PutItemInContainer(command.firstTarget, isRunning, command.secondTarget, output);
+		PutItemIntoContainer(command.firstTarget, isRunning, command.secondTarget, output);
 		break;
 	case CommandType::Remove:
 		TakeItemFromContainer(command.firstTarget, isRunning, command.secondTarget, output);
@@ -57,7 +54,7 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 		isRunning = false;
 		break;
 	default:
-		output << "No entiendo ese comando.\n";
+		output << "No he entendido eso.\n";
 		break;
 	}
 }
@@ -137,7 +134,7 @@ void GameWorld::MovePlayer(Direction direction, bool& isRunning, std::ostream& o
 	Room* nextRoom = FindRoomById(nextRoomId);
 	if (nextRoom == nullptr) // <--------- Just a check that warns the programmer. This should not ever happen.
 	{
-		std::cerr << "A pointer to a Room must never be nullptr.\n";
+		std::cerr << "The pointer to nextRoom must never be nullptr.\n";
 		isRunning = false;
 		return;
 	}
@@ -164,11 +161,17 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 		return;
 	}
 
+	if (!IsAValidItem(target))
+	{
+		output << "No se lo que intentas examinar.\n";
+		return;
+	}
+
 	// In WestZork there is item uniqueness so an item either is in the room, in the player inventory or it does not exist in the world. (Not sure if this also happens in Zork)
-	const Item* item = FindItemByTarget(room->GetItems(), target);  // <------- Search first in the current room
+	const Item* item = room->FindItem(target);  // <------- Search first in the current room
 	if (item == nullptr)
 	{
-		item = FindItemByTarget(m_player.GetInventory(), target); // <------- And then in the player inventory
+		item = m_player.FindItem(target); // <------- And then in the player inventory
 	}
 
 	if (item == nullptr)
@@ -196,7 +199,13 @@ void GameWorld::TakeItem(const std::string& target, bool& isRunning, std::ostrea
 		return;
 	}
 
-	const Item* item = FindItemByTarget(room->GetItems(), target);
+	if (!IsAValidItem(target))
+	{
+		output << "No se lo que intentas coger.\n";
+		return;
+	}
+
+	const Item* item = room->FindItem(target);
 	if (item == nullptr)
 	{
 		output << "No hay ningun \"" << target << "\" en " << room->GetName() << ".\n";
@@ -217,7 +226,13 @@ void GameWorld::DropItem(const std::string& target, bool& isRunning, std::ostrea
 		return;
 	}
 
-	const Item* item = FindItemByTarget(m_player.GetInventory(), target);
+	if (!IsAValidItem(target))
+	{
+		output << "No se lo que intentas soltar.\n";
+		return;
+	}
+
+	const Item* item = m_player.FindItem(target);
 	if (item == nullptr)
 	{
 		output << "No tienes ese objeto.\n";
@@ -228,7 +243,7 @@ void GameWorld::DropItem(const std::string& target, bool& isRunning, std::ostrea
 	output << "Sueltas " << item->GetName() << ".\n";
 }
 
-void GameWorld::PutItemInContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output)
+void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
@@ -238,8 +253,21 @@ void GameWorld::PutItemInContainer(const std::string& itemTarget, bool& isRunnin
 		return;
 	}
 
-	// Try to find the item to move into the item container
-	const Item* item = FindItemByTarget(m_player.GetInventory(), itemTarget);
+	if (!IsAValidItem(itemTarget))
+	{
+		output << "No se lo que intentas meter.\n";
+		return;
+	}
+
+	if (!IsAValidItem(containerTarget))
+	{
+		output << "No se donde intentas meterlo.\n";
+		return;
+	}
+
+	// Try to find the item to move it into the item container
+	// IMPORTANT: The target item must be in player's inventory
+	const Item* item = m_player.FindItem(itemTarget);
 	if (item == nullptr)
 	{
 		output << "No tienes ese objeto.\n";
@@ -247,17 +275,16 @@ void GameWorld::PutItemInContainer(const std::string& itemTarget, bool& isRunnin
 	}
 
 	// Try to find the item container (could be in player inventory or in current room)
-	Item* containerItem = FindItemByTarget(m_player.GetInventory(), containerTarget);
-	
-	if (containerItem == nullptr && room != nullptr)
+	Item* containerItem = m_player.FindItem(containerTarget);
+	if (containerItem == nullptr)
 	{
-		containerItem = FindItemByTarget(room->GetItems(), containerTarget);
+		containerItem = room->FindItem(containerTarget);
 	}
 
 	// Didn't find it
 	if (containerItem == nullptr)
 	{
-		output << "No he encontrado " << containerTarget << ".\n";
+		output << "No tienes el objeto donde quieres meter " << item->GetName() << ".\n";
 		return;
 	}
 
@@ -275,6 +302,12 @@ void GameWorld::PutItemInContainer(const std::string& itemTarget, bool& isRunnin
 		return;
 	}
 
+	if (item->IsContainer())
+	{
+		output << "No puedes meter " << item->GetName() << "en " << containerItem->GetName() << ".\n";
+		return;
+	}
+
 	containerItem->AddItem(m_player.RemoveItemFromInventory(item->GetId()));
 	output << "Metes " << item->GetName() << " en " << containerItem->GetName() << ".\n";
 }
@@ -289,32 +322,39 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 		return;
 	}
 
-	// Try to find the container item (could be in player inventory or in current room)
-	Item* container = FindItemByTarget(m_player.GetInventory(), containerTarget);
-	if (container == nullptr && room != nullptr)
+	if (!IsAValidItem(containerTarget))
 	{
-		container = FindItemByTarget(room->GetItems(), containerTarget);
+		output << "No se de donde intentas sacar eso.\n";
+		return;
 	}
 
-	// Didn't find it
+	if (!IsAValidItem(itemTarget))
+	{
+		output << "No se lo que intentas sacar.\n";
+		return;
+	}
+
+	// Try to find the container item
+	// IMPORTANT: The container item must be in player's inventory
+	Item* container = m_player.FindItem(containerTarget);
 	if (container == nullptr)
 	{
-		output << "No he encontrado " << containerTarget << ".\n";
+		output << "No tienes ese objeto.\n";
 		return;
 	}
 
-	// Check first if it's actually an container item
+	// Check first if it's actually a container item
 	if (!container->IsContainer())
 	{
-		output << container->GetName() << " no contiene objetos.\n";
+		output << "No se puede guardar nada en " << container->GetName() << ".\n";
 		return;
 	}
 
-	// Find the item we want to take from the container
-	const Item* item = FindItemByTarget(container->GetContainedItems(), itemTarget);
+	// Try to find the target item in the container item
+	Item* item = container->FindItem(containerTarget);
 	if (item == nullptr)
 	{
-		output << "No encuentras ese objeto dentro de " << container->GetName() << ".\n";
+		output << "Este objeto no esta en " << container->GetName() << ".\n";
 		return;
 	}
 

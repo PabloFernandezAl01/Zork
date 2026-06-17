@@ -8,7 +8,6 @@
 #include <memory>
 #include <iosfwd>
 #include <string>
-#include <vector>
 
 struct Command;
 
@@ -33,7 +32,7 @@ private:
 	/*
 	*  Rooms & items queries and handling
 	*/
-	static Item* FindItemByTarget(const std::vector<std::shared_ptr<Item>>& items, const std::string& target);
+	bool IsAValidItem(const std::string& target) const;
 
 	Room* FindRoomById(const std::string& roomId);
 	const Room* FindRoomById(const std::string& roomId) const;
@@ -55,7 +54,7 @@ private:
 	void ShowInventory(std::ostream& output) const;
 	void TakeItem(const std::string& target, bool& isRunning, std::ostream& output);
 	void DropItem(const std::string& target, bool& isRunning, std::ostream& output);
-	void PutItemInContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
+	void PutItemIntoContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
 	void TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
 	void ShowHelp(std::ostream& output) const;
 

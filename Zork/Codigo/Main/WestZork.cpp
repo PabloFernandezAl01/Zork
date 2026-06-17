@@ -13,7 +13,7 @@ void WestZork::Run()
 
 	std::cout << "West Zork\n";
 	std::cout << "Escribe \"ayuda\" para ver los comandos disponibles.\n\n";
-	m_world.Look();
+	m_world.Look(std::cout);
 
 	while (isRunning)
 	{
@@ -29,7 +29,7 @@ void WestZork::Run()
 		const Command command = m_parser.Parse(input);
 
 		// Take the required action from that command, if any
-		m_world.ExecuteCommand(command, isRunning);
+		m_world.ExecuteCommand(command, isRunning, std::cout);
 	}
 
 	std::cout << "Fin de la partida.\n";

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iosfwd>
 #include <string>
 
 class Entity
@@ -12,6 +13,8 @@ public:
 	const std::string& GetId() const;
 	const std::string& GetName() const;
 	const std::string& GetDescription() const;
+
+	virtual void PrintInformation(std::ostream& output) const;
 
 	void SetName(const std::string& name);
 	void SetDescription(const std::string& description);

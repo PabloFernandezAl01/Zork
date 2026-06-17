@@ -1,5 +1,7 @@
 #include "Entity.h"
 
+#include <ostream>
+
 Entity::Entity(const std::string& id, const std::string& name, const std::string& description)
 	: m_id(id)
 	, m_name(name)
@@ -20,6 +22,12 @@ const std::string& Entity::GetName() const
 const std::string& Entity::GetDescription() const
 {
 	return m_description;
+}
+
+void Entity::PrintInformation(std::ostream& output) const
+{
+	output << m_name << '\n';
+	output << m_description << '\n';
 }
 
 void Entity::SetName(const std::string& name)

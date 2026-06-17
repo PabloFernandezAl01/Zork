@@ -6,11 +6,14 @@
 
 #include <map>
 #include <memory>
+#include <iosfwd>
 #include <string>
+#include <vector>
+
+struct Command;
 
 /*
-GameWorld keeps ownership of rooms and items. These methods return non-owning
-pointers because the requested entity may not exist.
+GameWorld owns the main entities and coordinates gameplay rules.
 */
 
 class GameWorld
@@ -19,8 +22,18 @@ public:
 
 	GameWorld();
 
-	Player& GetPlayer();
-	const Player& GetPlayer() const;
+	// Entry point for the class, called from WestZork::Run()
+	void ExecuteCommand(const Command& command, bool& isRunning, std::ostream& output);
+
+	// Shows the current room information (name, desc, items, exists)
+	void Look(std::ostream& output, bool& isRunning) const;
+
+private:
+	
+	/*
+	*  Rooms & items queries and handling
+	*/
+	static Item* FindItemByTarget(const std::vector<std::shared_ptr<Item>>& items, const std::string& target);
 
 	Room* FindRoomById(const std::string& roomId);
 	const Room* FindRoomById(const std::string& roomId) const;
@@ -28,10 +41,23 @@ public:
 	Item* FindItemById(const std::string& itemId);
 	const Item* FindItemById(const std::string& itemId) const;
 
+	Room* GetCurrentRoom();
+	const Room* GetCurrentRoom() const;
+
 	void AddRoom(const std::shared_ptr<Room>& room);
 	void AddItem(const std::shared_ptr<Item>& item);
 
-private:
+	/*
+	*  Commands handling
+	*/
+	void MovePlayer(Direction direction, bool& isRunning, std::ostream& output);
+	void Examine(const std::string& target, bool& isRunning, std::ostream& output) const;
+	void ShowInventory(std::ostream& output) const;
+	void TakeItem(const std::string& target, bool& isRunning, std::ostream& output);
+	void DropItem(const std::string& target, bool& isRunning, std::ostream& output);
+	void PutItemInContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
+	void TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
+	void ShowHelp(std::ostream& output) const;
 
 	Player m_player;
 

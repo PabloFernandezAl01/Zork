@@ -3,9 +3,7 @@
 #include <iostream>
 #include <string>
 
-WestZork::WestZork()
-{
-}
+WestZork::WestZork() {}
 
 void WestZork::Run()
 {
@@ -13,7 +11,7 @@ void WestZork::Run()
 
 	std::cout << "West Zork\n";
 	std::cout << "Escribe \"ayuda\" para ver los comandos disponibles.\n\n";
-	m_world.Look(std::cout);
+	m_world.Look(std::cout, isRunning);
 
 	while (isRunning)
 	{

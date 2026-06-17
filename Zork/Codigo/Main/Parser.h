@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Room.h" // <--- To reuse Command struct
+#include "Room.h" // <--- To reuse Direction struct
 
 #include <string>
 
@@ -26,6 +26,31 @@ struct Command
 	Direction direction = Direction::North;
 	std::string firstTarget;
 	std::string secondTarget;
+
+	/*
+	* Examples:
+	* 
+	* 1.- "Coger botella": 
+	* 
+	*	+ type would be CommandType::Take
+	*   + direction would be Direction::North (default value)
+	*   + firstTarget would be "botella"
+	*   + secondTarget would be empty (default value)
+	* 
+	* 2.- "Este": 
+	* 
+	*	+ type would be CommandType::Move
+	*   + direction would be Direction::East
+	*   + firstTarget would be empty (default value)
+	*   + secondTarget would be empty (default value)
+	* 
+	* 3.- "Meter botella en bolsa":
+	*
+	*	+ type would be CommandType::Put
+	*   + direction would be Direction::North (default value)
+	*   + firstTarget would be "botella"
+	*   + secondTarget would be "bolsa"
+	*/
 };
 
 class Parser

@@ -59,6 +59,15 @@ private:
 	void TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
 	void ShowHelp(std::ostream& output) const;
 
+	/*
+	*  WORLD SETUP
+	* - Rooms creation
+	* - Rooms conexions creation
+	* - Items creation
+	* - Items distribution in rooms
+	*/
+	void InitializeWorld(); 
+
 	Player m_player;
 
 	std::map<std::string, std::shared_ptr<Room>> m_rooms;

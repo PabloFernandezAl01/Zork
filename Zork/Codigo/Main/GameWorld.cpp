@@ -19,6 +19,7 @@ Item* GameWorld::FindItemByTarget(const std::vector<std::shared_ptr<Item>>& item
 GameWorld::GameWorld()
 	: m_player("player", "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
 {
+	InitializeWorld();
 }
 
 void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ostream& output)
@@ -339,4 +340,212 @@ Room* GameWorld::GetCurrentRoom()
 const Room* GameWorld::GetCurrentRoom() const
 {
 	return FindRoomById(m_player.GetCurrentRoomId());
+}
+
+void GameWorld::InitializeWorld()
+{
+
+	/*
+	*                            ROOMS CREATION
+	*    // -------------------------------------------------------- \\
+	*/
+
+	std::shared_ptr<Room> townEntrance = std::make_shared<Room>(
+		"entrada_pueblo",
+		"Entrada al pueblo",
+		"El viejo arco de madera marca la entrada a West Zork. El polvo cubre el camino y el silencio pesa demasiado.");
+
+	std::shared_ptr<Room> abandonedStable = std::make_shared<Room>(
+		"establo_abandonado",
+		"Establo abandonado",
+		"Un establo medio hundido. Huele a heno podrido, madera humeda y algo que lleva anos sin moverse.");
+
+	std::shared_ptr<Room> mainStreet = std::make_shared<Room>(
+		"calle_principal",
+		"Calle Principal",
+		"La calle cruza el pueblo de lado a lado. Las fachadas vacias parecen observar cada paso.");
+
+	std::shared_ptr<Room> saloon = std::make_shared<Room>(
+		"saloon",
+		"Saloon",
+		"Las puertas del saloon crujen con el viento. Botellas rotas y mesas volcadas cuentan una mala noche.");
+
+	std::shared_ptr<Room> sheriffOffice = std::make_shared<Room>(
+		"oficina_sheriff",
+		"Oficina del Sheriff",
+		"Una oficina pequena, con barrotes oxidados al fondo y papeles amarillentos sobre el escritorio.");
+
+	std::shared_ptr<Room> backCell = std::make_shared<Room>(
+		"celda_trasera",
+		"Celda trasera",
+		"Una celda oscura y estrecha. La humedad se pega a la piel y cuesta distinguir el suelo.");
+
+	std::shared_ptr<Room> oldChurch = std::make_shared<Room>(
+		"iglesia_vieja",
+		"Iglesia vieja",
+		"El campanario esta torcido y la puerta principal conserva marcas profundas de cadenas.");
+
+	std::shared_ptr<Room> crypt = std::make_shared<Room>(
+		"cripta",
+		"Cripta bajo la iglesia",
+		"Un frio seco sube desde la piedra. En la oscuridad, algo espera.");
+
+	AddRoom(townEntrance);
+	AddRoom(abandonedStable);
+	AddRoom(mainStreet);
+	AddRoom(saloon);
+	AddRoom(sheriffOffice);
+	AddRoom(backCell);
+	AddRoom(oldChurch);
+	AddRoom(crypt);
+
+	/*
+	*                            ROOMS CONEXIONS CREATION
+	*    // --------------------------------------------------------------------- \\
+	*/
+
+	townEntrance->AddExit(Direction::East, "establo_abandonado");
+	townEntrance->AddExit(Direction::North, "calle_principal");
+
+	abandonedStable->AddExit(Direction::West, "entrada_pueblo");
+
+	mainStreet->AddExit(Direction::South, "entrada_pueblo");
+	mainStreet->AddExit(Direction::West, "saloon");
+	mainStreet->AddExit(Direction::East, "oficina_sheriff");
+	mainStreet->AddExit(Direction::North, "iglesia_vieja");
+
+	saloon->AddExit(Direction::East, "calle_principal");
+
+	sheriffOffice->AddExit(Direction::West, "calle_principal");
+	sheriffOffice->AddExit(Direction::East, "celda_trasera");
+
+	backCell->AddExit(Direction::West, "oficina_sheriff");
+
+	oldChurch->AddExit(Direction::South, "calle_principal");
+	oldChurch->AddExit(Direction::Down, "cripta");
+
+	crypt->AddExit(Direction::Exit, "iglesia_vieja");
+
+	/*
+	*                      SPECIFIC ROOMS CONFIGURATION
+	*    // -------------------------------------------------------- \\
+	*/
+
+	backCell->SetDark(true);
+	backCell->SetLocked(true);
+	crypt->SetDark(true);
+	oldChurch->SetLocked(true);
+
+	/*
+	*                    ITEMS CREATION & CONFIGURATION
+	*    // -------------------------------------------------------- \\
+	*/
+
+	std::shared_ptr<Item> whiskyBottle = std::make_shared<Item>(
+		"botella_whisky",
+		"Botella de whisky vacia",
+		"Una botella vacia con una etiqueta casi borrada.");
+	whiskyBottle->AddAlias("botella");
+	whiskyBottle->AddAlias("whisky");
+
+	std::shared_ptr<Item> tornMap = std::make_shared<Item>(
+		"mapa_rasgado",
+		"Mapa rasgado",
+		"Un mapa incompleto del pueblo. Aun se distinguen la iglesia, el saloon y la oficina del sheriff.");
+	tornMap->AddAlias("mapa");
+
+	std::shared_ptr<Item> lantern = std::make_shared<Item>(
+		"farol",
+		"Farol apagado",
+		"Un farol viejo, pero parece que todavia podria encenderse.");
+	lantern->AddAlias("farol");
+
+	lantern->SetLightSource(true);
+
+	std::shared_ptr<Item> matches = std::make_shared<Item>(
+		"cerillas",
+		"Cerillas",
+		"Una pequena caja de cerillas humedecida por fuera.");
+	matches->AddAlias("cerilla");
+
+	std::shared_ptr<Item> boltCutter = std::make_shared<Item>(
+		"cizalla",
+		"Cizalla oxidada",
+		"Una cizalla pesada con las hojas comidas por el oxido.");
+	boltCutter->AddAlias("cizalla");
+
+	std::shared_ptr<Item> smallKey = std::make_shared<Item>(
+		"llave",
+		"Llave pequena",
+		"Una llave pequena de hierro ennegrecido.");
+	smallKey->AddAlias("llave");
+	smallKey->AddAlias("llave pequena");
+
+	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
+		"caja_fuerte",
+		"Caja fuerte",
+		"Una caja fuerte compacta detras de la barra.");
+	safeBox->AddAlias("caja");
+
+	safeBox->SetContainer(true);
+
+	std::shared_ptr<Item> revolver = std::make_shared<Item>(
+		"revolver",
+		"Revolver descargado",
+		"Un revolver frio al tacto. No hay balas en el tambor.");
+	revolver->AddAlias("revolver");
+
+	revolver->SetWeapon(true);
+
+	std::shared_ptr<Item> ammunition = std::make_shared<Item>(
+		"municion",
+		"Municion",
+		"Unas pocas balas envueltas en papel aceitado.");
+	ammunition->AddAlias("balas");
+
+	std::shared_ptr<Item> sheriffDiary = std::make_shared<Item>(
+		"diario_sheriff",
+		"Diario del sheriff",
+		"Un diario manchado con entradas cada vez mas desesperadas.");
+	sheriffDiary->AddAlias("diario");
+
+	std::shared_ptr<Item> silverCross = std::make_shared<Item>(
+		"cruz_plata",
+		"Cruz de plata",
+		"Una cruz de plata pequena, demasiado limpia para este lugar.");
+	silverCross->AddAlias("cruz");
+
+	std::shared_ptr<Item> eliasHat = std::make_shared<Item>(
+		"sombrero_elias",
+		"Sombrero de Elias",
+		"El sombrero de tu hermano. Reconocerias esa cinta azul en cualquier parte.");
+	eliasHat->AddAlias("sombrero");
+
+	townEntrance->AddItem(whiskyBottle);
+	townEntrance->AddItem(tornMap);
+	abandonedStable->AddItem(lantern);
+	abandonedStable->AddItem(matches);
+	mainStreet->AddItem(boltCutter);
+	saloon->AddItem(smallKey);
+	saloon->AddItem(safeBox);
+	sheriffOffice->AddItem(revolver);
+	sheriffOffice->AddItem(ammunition);
+	sheriffOffice->AddItem(sheriffDiary);
+	backCell->AddItem(silverCross);
+	oldChurch->AddItem(eliasHat);
+
+	AddItem(whiskyBottle);
+	AddItem(tornMap);
+	AddItem(lantern);
+	AddItem(matches);
+	AddItem(boltCutter);
+	AddItem(smallKey);
+	AddItem(safeBox);
+	AddItem(revolver);
+	AddItem(ammunition);
+	AddItem(sheriffDiary);
+	AddItem(silverCross);
+	AddItem(eliasHat);
+
+	m_player.SetCurrentRoomId("entrada_pueblo");
 }

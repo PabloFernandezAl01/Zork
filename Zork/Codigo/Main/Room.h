@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+// All possible movement directions in WestZork
 enum class Direction
 {
 	North,
@@ -20,7 +21,11 @@ enum class Direction
 	Exit
 };
 
-std::string DirectionToText(Direction direction);
+struct DirectionUtils
+{
+	// Enum to string converter
+	static std::string ToText(Direction direction);
+};
 
 class Room : public Entity
 {
@@ -28,6 +33,9 @@ public:
 
 	Room(const std::string& id, const std::string& name, const std::string& description);
 
+	/*
+	*  Gameplay attributes GET/SET
+	*/
 	bool IsDark() const;
 	void SetDark(bool dark);
 
@@ -37,17 +45,29 @@ public:
 	bool IsLocked() const;
 	void SetLocked(bool locked);
 
-	const std::map<Direction, std::string>& GetExits() const;
+	// Checks if there is a room in a given direction
 	bool TryGetExit(Direction direction, std::string& outRoomId) const;
+
+	const std::map<Direction, std::string>& GetExits() const;
 	const std::vector<std::shared_ptr<Item>>& GetItems() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
 
+	/*
+	*  Prints to the output the info of the item:
+	* - Name
+	* - Description
+	* - Names of the items in the room
+	* - In Zork this would also prints the exists but in WestZork thats handled by another command ("Examinar mapa")
+	*/
 	void PrintInformation(std::ostream& output) const override;
 
 	void AddExit(Direction direction, const std::string& targetRoomId);
-	void AddItem(const std::shared_ptr<Item>& item);
 
+	/*
+	* Item addition and removing
+	*/
+	void AddItem(const std::shared_ptr<Item>& item);
 	std::shared_ptr<Item> RemoveItem(const std::string& itemId);
 
 private:

@@ -14,6 +14,9 @@
 * 
 * PrintInformation overrides Entity adding the information related to all the names of the items
 * in player's inventory. 
+* 
+* It adds funcionality to add/remove items from the inventory and to check if an item exists in
+* the inventory. 
 */
 
 class Player : public Entity

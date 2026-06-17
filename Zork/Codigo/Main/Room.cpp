@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <ostream>
 
-std::string DirectionToText(Direction direction)
+std::string DirectionUtils::ToText(Direction direction)
 {
 	switch (direction)
 	{

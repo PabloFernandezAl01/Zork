@@ -127,7 +127,7 @@ void GameWorld::MovePlayer(Direction direction, bool& isRunning, std::ostream& o
 	std::string nextRoomId;
 	if (!currentRoom->TryGetExit(direction, nextRoomId))
 	{
-		output << "No puedes ir hacia " << DirectionToText(direction) << ". El mapa te puede dar alguna pista...\n";
+		output << "No puedes ir hacia " << DirectionUtils::ToText(direction) << ". El mapa te puede dar alguna pista...\n";
 		return;
 	}
 

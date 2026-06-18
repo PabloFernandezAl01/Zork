@@ -840,12 +840,7 @@ bool GameWorld::CanPlayerSee(const Room& room) const
 
 	// In WestZork a light source only illuminates the room while the player is
 	// carrying it. A lit lantern left on the ground does not provide visibility.
-	const auto& inventory = m_player.GetInventory();
-	return std::find_if(inventory.begin(), inventory.end(),
-		[](const std::shared_ptr<Item>& item)
-		{
-			return item->IsLightSource() && item->IsTurnedOn();
-		}) != inventory.end();
+	return m_player.HasTurnedOnLightSource();
 }
 
 void GameWorld::InitializeWorld()
@@ -859,7 +854,7 @@ void GameWorld::InitializeWorld()
 	std::shared_ptr<Room> townEntrance = std::make_shared<Room>(
 		RoomIds::TownEntrance,
 		"Entrada al pueblo",
-		"El viejo arco de madera marca la entrada a West Zork. El polvo cubre el camino y el silencio pesa demasiado.");
+		"El viejo arco de madera marca la entrada a Yellowville. El polvo cubre el camino y el silencio pesa demasiado.");
 
 	std::shared_ptr<Room> abandonedStable = std::make_shared<Room>(
 		RoomIds::AbandonedStable,
@@ -964,6 +959,8 @@ void GameWorld::InitializeWorld()
 		"Farol",
 		"Un farol viejo que aun conserva algo de combustible.");
 	lantern->AddAlias("farol");
+	lantern->AddAlias("lampara");
+	lantern->AddAlias("linterna");
 
 	lantern->SetLightState(LightState::Off);
 

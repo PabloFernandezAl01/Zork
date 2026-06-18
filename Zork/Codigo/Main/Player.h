@@ -26,12 +26,12 @@ public:
 	Player(const std::string& id, const std::string& name, const std::string& description);
 
 	const std::string& GetCurrentRoomId() const;
-	const std::vector<std::shared_ptr<Item>>& GetInventory() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
 	Item* FindItemById(const std::string& itemId);
 	const Item* FindItemById(const std::string& itemId) const;
 	bool HasItemById(const std::string& itemId) const;
+	bool HasTurnedOnLightSource() const;
 
 	void PrintInformation(std::ostream& output) const override;
 

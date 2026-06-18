@@ -51,7 +51,6 @@ public:
 	const Exit* FindExit(Direction direction) const;
 
 	const std::map<Direction, Exit>& GetExits() const;
-	const std::vector<std::shared_ptr<Item>>& GetItems() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
 

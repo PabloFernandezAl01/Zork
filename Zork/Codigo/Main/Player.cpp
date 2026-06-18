@@ -13,11 +13,6 @@ const std::string& Player::GetCurrentRoomId() const
 	return m_currentRoomId;
 }
 
-const std::vector<std::shared_ptr<Item>>& Player::GetInventory() const
-{
-	return m_inventory;
-}
-
 Item* Player::FindItem(const std::string& target)
 {
 	const auto it = std::find_if(m_inventory.begin(), m_inventory.end(),
@@ -65,6 +60,16 @@ const Item* Player::FindItemById(const std::string& itemId) const
 bool Player::HasItemById(const std::string& itemId) const
 {
 	return FindItemById(itemId) != nullptr;
+}
+
+bool Player::HasTurnedOnLightSource() const
+{
+	return std::any_of(m_inventory.cbegin(), m_inventory.cend(),
+		[](const std::shared_ptr<Item>& item)
+		{
+			const Item& readOnlyItem = *item;
+			return readOnlyItem.IsLightSource() && readOnlyItem.IsTurnedOn();
+		});
 }
 
 void Player::PrintInformation(std::ostream& output) const

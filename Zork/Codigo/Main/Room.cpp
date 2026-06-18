@@ -68,11 +68,6 @@ const std::map<Direction, Exit>& Room::GetExits() const
 	return m_exits;
 }
 
-const std::vector<std::shared_ptr<Item>>& Room::GetItems() const
-{
-	return m_items;
-}
-
 Item* Room::FindItem(const std::string& target)
 {
 	const auto it = std::find_if(m_items.begin(), m_items.end(),

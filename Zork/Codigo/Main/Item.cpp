@@ -141,11 +141,6 @@ void Item::PrintInformation(std::ostream& output) const
 		output << "- " << item->GetName() << '\n';
 }
 
-const std::vector<std::shared_ptr<Item>>& Item::GetContainedItems() const
-{
-	return m_containedItems;
-}
-
 Item* Item::FindItem(const std::string& target)
 {
 	if (!IsContainer() || !IsOpen())

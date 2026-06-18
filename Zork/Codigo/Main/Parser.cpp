@@ -41,25 +41,25 @@ Command Parser::Parse(const std::string& input) const
 
 	const std::string& verb = tokens[0];
 
-	if (verb == "mirar" || verb == "m")
+	if ((verb == "mirar" || verb == "m") && tokens.size() == 1)
 	{
 		command.type = CommandType::Look;
 		return command;
 	}
 
-	if (verb == "inventario" || verb == "i")
+	if ((verb == "inventario" || verb == "i") && tokens.size() == 1)
 	{
 		command.type = CommandType::Inventory;
 		return command;
 	}
 
-	if (verb == "ayuda" || verb == "help")
+	if ((verb == "ayuda" || verb == "help") && tokens.size() == 1)
 	{
 		command.type = CommandType::Help;
 		return command;
 	}
 
-	if (verb == "quit" || verb == "terminar")
+	if ((verb == "quit" || verb == "terminar") && tokens.size() == 1)
 	{
 		command.type = CommandType::Quit;
 		return command;

@@ -42,6 +42,7 @@ private:
 
 	Room* GetCurrentRoom();
 	const Room* GetCurrentRoom() const;
+	bool CanPlayerSee(const Room& room) const;
 
 	void AddRoom(const std::shared_ptr<Room>& room);
 	void AddItem(const std::shared_ptr<Item>& item);

@@ -121,13 +121,13 @@ void GameWorld::Look(std::ostream& output, bool& isRunning) const
 		return;
 	}
 
-	if (!room->IsDark())
+	if (CanPlayerSee(*room))
 	{
 		room->PrintInformation(output);
 	}
 	else
 	{
-		output << "No se ve nada.\n";
+		output << "Esta demasiado oscuro. Necesitas una fuente de luz encendida para poder ver.\n";
 	}
 }
 
@@ -179,19 +179,30 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 		return;
 	}
 
+	// Inventory items can be examined by touch even in a dark room. Darkness
+	// only prevents the player from discovering and inspecting room contents.
+	const Item* item = m_player.FindItem(target);
+	if (item != nullptr)
+	{
+		item->PrintInformation(output);
+		return;
+	}
+
+	if (!CanPlayerSee(*room))
+	{
+		output << "Esta demasiado oscuro para examinar nada de la sala.\n";
+		return;
+	}
+
 	if (!IsAValidItem(target))
 	{
 		output << "No se lo que intentas examinar.\n";
 		return;
 	}
 
-	// In WestZork there is item uniqueness so an item either is in the room, in the player inventory or it does not exist in the world. (Not sure if this also happens in Zork)
-	const Item* item = room->FindItem(target);  // <------- Search first in the current room
-	if (item == nullptr)
-	{
-		item = m_player.FindItem(target); // <------- And then in the player inventory
-	}
-
+	// In WestZork every item is unique, so after checking the inventory the
+	// target can only be directly present in the current room or unavailable.
+	item = room->FindItem(target);
 	if (item == nullptr)
 	{
 		output << "No encuentras lo que intentas examinar.\n";
@@ -214,6 +225,12 @@ void GameWorld::TakeItem(const std::string& target, bool& isRunning, std::ostrea
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		isRunning = false;
+		return;
+	}
+
+	if (!CanPlayerSee(*room))
+	{
+		output << "Esta demasiado oscuro para encontrar objetos en la sala.\n";
 		return;
 	}
 
@@ -437,7 +454,7 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 		return;
 	}
 
-	// Check it¡f the item is in the room or in the player's inventory
+	// Check if the item is in the room or in the player's inventory
 	Item* item = m_player.FindItem(target);
 	if (item == nullptr)
 	{
@@ -616,6 +633,13 @@ void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostr
 
 	item->SetLightState(LightState::On);
 	output << "Enciendes " << item->GetName() << ".\n";
+
+	// Immediately reveal the room when the newly lit item makes it visible.
+	const Room* room = GetCurrentRoom();
+	if (room != nullptr && room->IsDark())
+	{
+		Look(output, isRunning);
+	}
 }
 
 void GameWorld::LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output)
@@ -733,6 +757,23 @@ Room* GameWorld::GetCurrentRoom()
 const Room* GameWorld::GetCurrentRoom() const
 {
 	return FindRoomById(m_player.GetCurrentRoomId());
+}
+
+bool GameWorld::CanPlayerSee(const Room& room) const
+{
+	if (!room.IsDark())
+	{
+		return true;
+	}
+
+	// In WestZork a light source only illuminates the room while the player is
+	// carrying it. A lit lantern left on the ground does not provide visibility.
+	const auto& inventory = m_player.GetInventory();
+	return std::find_if(inventory.begin(), inventory.end(),
+		[](const std::shared_ptr<Item>& item)
+		{
+			return item->IsLightSource() && item->IsTurnedOn();
+		}) != inventory.end();
 }
 
 void GameWorld::InitializeWorld()

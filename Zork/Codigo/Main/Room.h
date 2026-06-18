@@ -38,9 +38,6 @@ public:
 	bool IsDark() const;
 	void SetDark(bool dark);
 
-	bool IsVisited() const;
-	void SetVisited(bool visited);
-
 	bool IsLocked() const;
 	void SetLocked(bool locked);
 
@@ -75,7 +72,6 @@ public:
 private:
 
 	bool m_isDark;
-	bool m_isVisited;
 	bool m_isLocked;
 
 	std::map<Direction, std::string> m_exits;

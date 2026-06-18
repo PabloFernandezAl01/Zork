@@ -27,7 +27,6 @@ std::string DirectionUtils::ToText(Direction direction)
 Room::Room(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
 	, m_isDark(false)
-	, m_isVisited(false)
 	, m_isLocked(false)
 {
 }
@@ -37,19 +36,9 @@ bool Room::IsDark() const
 	return m_isDark;
 }
 
-bool Room::IsVisited() const
-{
-	return m_isVisited;
-}
-
 void Room::SetDark(bool dark)
 {
 	m_isDark = dark;
-}
-
-void Room::SetVisited(bool visited)
-{
-	m_isVisited = visited;
 }
 
 bool Room::IsLocked() const

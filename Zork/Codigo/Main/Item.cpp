@@ -9,6 +9,7 @@ Item::Item(const std::string& id, const std::string& name, const std::string& de
 	, m_containerState(ContainerState::NotApplicable)
 	, m_lightState(LightState::NotApplicable)
 	, m_loadState(LoadState::NotApplicable)
+	, m_requiresLightToExamine(false)
 {
 }
 
@@ -75,6 +76,16 @@ LoadState Item::GetLoadState() const
 void Item::SetLoadState(LoadState state)
 {
 	m_loadState = state;
+}
+
+bool Item::RequiresLightToExamine() const
+{
+	return m_requiresLightToExamine;
+}
+
+void Item::SetRequiresLightToExamine(bool requiresLight)
+{
+	m_requiresLightToExamine = requiresLight;
 }
 
 const std::vector<std::string>& Item::GetAliases() const

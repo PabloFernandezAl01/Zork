@@ -54,6 +54,9 @@ public:
 	LoadState GetLoadState() const;
 	void SetLoadState(LoadState state);
 
+	bool RequiresLightToExamine() const;
+	void SetRequiresLightToExamine(bool requiresLight);
+
 	/*
 	*  Helpers to match the user input to actual items
 	*  Aliases system to soften the matching
@@ -87,6 +90,7 @@ private:
 	ContainerState m_containerState;
 	LightState m_lightState;
 	LoadState m_loadState;
+	bool m_requiresLightToExamine;
 
 	std::vector<std::string> m_aliases;
 	std::vector<std::shared_ptr<Item>> m_containedItems;

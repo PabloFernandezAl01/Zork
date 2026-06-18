@@ -176,8 +176,8 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 		return;
 	}
 
-	// Inventory items can be examined by touch even in a dark room. Darkness
-	// only prevents the player from discovering and inspecting room contents.
+	// Inventory items can generally be examined by touch even in a dark room.
+	// Objects whose information must be read still require light.
 	const Item* item = m_player.FindItem(target);
 	if (item == nullptr)
 	{
@@ -201,6 +201,12 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 			output << "No encuentras lo que intentas examinar.\n";
 			return;
 		}
+	}
+
+	if (!CanPlayerSee(*room) && item->RequiresLightToExamine())
+	{
+		output << "Esta demasiado oscuro para leer " << item->GetName() << ".\n";
+		return;
 	}
 
 	// If the item was found, show it's information (name, descripction and items inside, if any)
@@ -311,6 +317,12 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 	Item* containerItem = m_player.FindItem(containerTarget);
 	if (containerItem == nullptr)
 	{
+		if (!CanPlayerSee(*room))
+		{
+			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+			return;
+		}
+
 		containerItem = room->FindItem(containerTarget);
 	}
 
@@ -349,7 +361,7 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 
 	if (item->IsContainer())
 	{
-		output << "No puedes meter " << item->GetName() << "en " << containerItem->GetName() << ".\n";
+		output << "No puedes meter " << item->GetName() << " en " << containerItem->GetName() << ".\n";
 		return;
 	}
 
@@ -383,6 +395,12 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 	Item* container = m_player.FindItem(containerTarget);
 	if (container == nullptr)
 	{
+		if (!CanPlayerSee(*room))
+		{
+			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+			return;
+		}
+
 		container = room->FindItem(containerTarget);
 	}
 
@@ -456,6 +474,12 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 	Item* item = m_player.FindItem(target);
 	if (item == nullptr)
 	{
+		if (!CanPlayerSee(*room))
+		{
+			output << "Esta demasiado oscuro para encontrar lo que intentas abrir.\n";
+			return;
+		}
+
 		item = room->FindItem(target);
 	}
 
@@ -937,6 +961,7 @@ void GameWorld::InitializeWorld()
 		"Mapa rasgado",
 		"Un mapa incompleto del pueblo. Aun se distinguen la iglesia, el saloon y la oficina del sheriff.");
 	tornMap->AddAlias("mapa");
+	tornMap->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> lantern = std::make_shared<Item>(
 		"farol",
@@ -981,6 +1006,7 @@ void GameWorld::InitializeWorld()
 		"Una nota escrita con pulso tembloroso por el antiguo tabernero.");
 	bartenderNote->AddAlias("nota");
 	bartenderNote->AddAlias("nota del tabernero");
+	bartenderNote->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
 		"caja_fuerte",
@@ -1011,6 +1037,7 @@ void GameWorld::InitializeWorld()
 		"Diario del sheriff",
 		"Un diario manchado con entradas cada vez mas desesperadas.");
 	sheriffDiary->AddAlias("diario");
+	sheriffDiary->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> silverCross = std::make_shared<Item>(
 		"cruz_plata",

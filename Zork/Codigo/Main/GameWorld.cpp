@@ -486,7 +486,7 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 		}
 
 		const std::string requiredKeyId = "llave";
-		const Item* key = toolTarget.empty() ? m_player.FindItem(requiredKeyId) : m_player.FindItem(toolTarget);
+		const Item* key = toolTarget.empty() ? m_player.FindItemById(requiredKeyId) : m_player.FindItem(toolTarget);
 
 		if (key == nullptr || key->GetId() != requiredKeyId)
 		{
@@ -544,7 +544,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 
 		// If we get here it means we are in "Oficina del Sheriff" and "Celda trasera" it's locked
 		const std::string requiredToolId = "llave";
-		const Item* smallKey = toolTarget.empty() ? m_player.FindItem(requiredToolId): m_player.FindItem(toolTarget);
+		const Item* smallKey = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
 
 		if (smallKey == nullptr || smallKey->GetId() != requiredToolId)
 		{
@@ -581,7 +581,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 
 	// If we get here it means we are in "Iglesia vieja" and "Cripta al norte de la iglesia" it's locked
 	const std::string requiredToolId = "cruz_plata";
-	const Item* silverCross = toolTarget.empty() ? m_player.FindItem(requiredToolId) : m_player.FindItem(toolTarget);
+	const Item* silverCross = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
 
 	if (silverCross == nullptr || silverCross->GetId() != requiredToolId)
 	{
@@ -623,7 +623,7 @@ void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostr
 	}
 
 	// The item used to turn on the light source item must also be in player's inventory
-	if (m_player.FindItem("cerillas") == nullptr)
+	if (m_player.FindItemById("cerillas") == nullptr)
 	{
 		output << "Necesitas algo con lo que encender " << item->GetName() << ".\n";
 		return;
@@ -673,7 +673,7 @@ void GameWorld::LoadItem(const std::string& target, const std::string& ammunitio
 	const std::string ammunitionId = "municion";
 
 	// This is just to allow the command to not mention "municion" so the input could be "Cargar revolver" and also "Cargar revolver con municion"
-	const Item* ammunition = ammunitionTarget.empty() ? m_player.FindItem(ammunitionId) : m_player.FindItem(ammunitionTarget);
+	const Item* ammunition = ammunitionTarget.empty() ? m_player.FindItemById(ammunitionId) : m_player.FindItem(ammunitionTarget);
 
 	if (ammunition == nullptr || ammunition->GetId() != ammunitionId)
 	{
@@ -723,7 +723,7 @@ void GameWorld::BreakObstacle(const std::string& target, const std::string& tool
 	}
 
 	const std::string requiredToolId = "cizalla";
-	const Item* boltCutter = toolTarget.empty() ? m_player.FindItem(requiredToolId) : m_player.FindItem(toolTarget);
+	const Item* boltCutter = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
 
 	if (boltCutter == nullptr || boltCutter->GetId() != requiredToolId)
 	{
@@ -764,7 +764,7 @@ void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget
 	}
 
 	const std::string requiredWeaponId = "revolver";
-	Item* weapon = weaponTarget.empty() ? m_player.FindItem(requiredWeaponId) : m_player.FindItem(weaponTarget);
+	Item* weapon = weaponTarget.empty() ? m_player.FindItemById(requiredWeaponId) : m_player.FindItem(weaponTarget);
 
 	if (weapon == nullptr || weapon->GetId() != requiredWeaponId)
 	{

@@ -40,6 +40,28 @@ const Item* Player::FindItem(const std::string& target) const
 	return it != m_inventory.end() ? it->get() : nullptr;
 }
 
+Item* Player::FindItemById(const std::string& itemId)
+{
+	const auto it = std::find_if(m_inventory.begin(), m_inventory.end(),
+		[&itemId](const std::shared_ptr<Item>& item)
+		{
+			return item->GetId() == itemId;
+		});
+
+	return it != m_inventory.end() ? it->get() : nullptr;
+}
+
+const Item* Player::FindItemById(const std::string& itemId) const
+{
+	const auto it = std::find_if(m_inventory.begin(), m_inventory.end(),
+		[&itemId](const std::shared_ptr<Item>& item)
+		{
+			return item->GetId() == itemId;
+		});
+
+	return it != m_inventory.end() ? it->get() : nullptr;
+}
+
 void Player::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);

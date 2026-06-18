@@ -29,6 +29,8 @@ public:
 	const std::vector<std::shared_ptr<Item>>& GetInventory() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
+	Item* FindItemById(const std::string& itemId);
+	const Item* FindItemById(const std::string& itemId) const;
 
 	void PrintInformation(std::ostream& output) const override;
 

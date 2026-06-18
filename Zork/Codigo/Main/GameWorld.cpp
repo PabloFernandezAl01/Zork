@@ -48,16 +48,16 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 		TakeItemFromContainer(command.firstTarget, isRunning, command.secondTarget, output);
 		break;
 	case CommandType::Open:
-		// TODO
+		Open(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
 	case CommandType::TurnOn:
-		// TODO
+		TurnOnItem(command.firstTarget, isRunning, output);
 		break;
 	case CommandType::Load:
-		// TODO
+		LoadItem(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
 	case CommandType::Break:
-		// TODO
+		BreakObstacle(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
 	case CommandType::Read:
 		// TODO
@@ -313,6 +313,18 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 		return;
 	}
 
+	if (containerItem->IsLocked())
+	{
+		output << containerItem->GetName() << " esta bloqueado.\n";
+		return;
+	}
+
+	if (!containerItem->IsOpen())
+	{
+		output << containerItem->GetName() << " esta cerrado.\n";
+		return;
+	}
+
 	// If found, check if the item it's not the same as the container item ("Meter botella en botella")
 	if (item->GetId() == containerItem->GetId())
 	{
@@ -372,6 +384,18 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 		return;
 	}
 
+	if (container->IsLocked())
+	{
+		output << container->GetName() << " esta bloqueado.\n";
+		return;
+	}
+
+	if (!container->IsOpen())
+	{
+		output << container->GetName() << " esta cerrado.\n";
+		return;
+	}
+
 	// Try to find the target item in the container item
 	Item* item = container->FindItem(itemTarget);
 	if (item == nullptr)
@@ -382,6 +406,311 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 
 	m_player.AddItemToInventory(container->RemoveItem(item->GetId()));
 	output << "Sacas " << item->GetName() << " de " << container->GetName() << ".\n";
+}
+
+void GameWorld::Open(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+{
+	const bool targetsRoomLock =
+		target == "celda" ||
+		target == "puerta de la celda" ||
+		target == "cerradura" ||
+		target == "cerradura de la cripta";
+
+	if (targetsRoomLock)
+	{
+		// This handles commands to unlock items or rooms
+		Unlock(target, toolTarget, isRunning, output);
+	}
+	else
+	{
+		OpenItem(target, toolTarget, isRunning, output);
+	}
+}
+
+void GameWorld::OpenItem(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+{
+	Room* room = GetCurrentRoom();
+	if (room == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	// Check it¡f the item is in the room or in the player's inventory
+	Item* item = m_player.FindItem(target);
+	if (item == nullptr)
+	{
+		item = room->FindItem(target);
+	}
+
+	if (item == nullptr)
+	{
+		output << "No encuentras lo que intentas abrir.\n";
+		return;
+	}
+
+	if (!item->IsContainer())
+	{
+		output << item->GetName() << " no se puede abrir.\n";
+		return;
+	}
+
+	if (item->IsOpen())
+	{
+		output << item->GetName() << " ya esta abierto.\n";
+		return;
+	}
+
+	if (item->IsLocked())
+	{
+		if (item->GetId() != "caja_fuerte")
+		{
+			output << "No sabes como abrir " << item->GetName() << ".\n";
+			return;
+		}
+
+		const std::string requiredKeyId = "llave";
+		const Item* key = toolTarget.empty() ? m_player.FindItem(requiredKeyId) : m_player.FindItem(toolTarget);
+
+		if (key == nullptr || key->GetId() != requiredKeyId)
+		{
+			output << "Necesitas la llave adecuada para abrir " << item->GetName() << ".\n";
+			return;
+		}
+	}
+
+	item->SetContainerState(ContainerState::Open);
+	output << "Abres " << item->GetName() << ".\n";
+}
+
+void GameWorld::Unlock(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+{
+	Room* currentRoom = GetCurrentRoom();
+	if (currentRoom == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	const bool targetsBackCell = target == "celda" || target == "puerta de la celda";
+	const bool targetsCrypt = target == "cerradura" || target == "cerradura de la cripta";
+
+	if (!targetsBackCell && !targetsCrypt)
+	{
+		output << "No encuentras ninguna cerradura que puedas abrir.\n";
+		return;
+	}
+
+	// ------------- The user is trying to unlock "Celda trasera" -----------------
+
+	if (targetsBackCell)
+	{
+		if (currentRoom->GetId() != "oficina_sheriff")
+		{
+			output << "No encuentras la puerta de la celda aqui.\n";
+			return;
+		}
+
+		Room* backCell = FindRoomById("celda_trasera");
+		if (backCell == nullptr)
+		{
+			std::cerr << "The \"Celda trasera\" room must always exist in the world.\n";
+			isRunning = false;
+			return;
+		}
+
+		if (!backCell->IsLocked())
+		{
+			output << "La puerta de la celda ya esta abierta.\n";
+			return;
+		}
+
+		// If we get here it means we are in "Oficina del Sheriff" and "Celda trasera" it's locked
+		const std::string requiredToolId = "llave";
+		const Item* smallKey = toolTarget.empty() ? m_player.FindItem(requiredToolId): m_player.FindItem(toolTarget);
+
+		if (smallKey == nullptr || smallKey->GetId() != requiredToolId)
+		{
+			output << "Necesitas la llave adecuada para abrir la puerta de la celda.\n";
+			return;
+		}
+
+		backCell->SetLocked(false);
+		output << "Abres la puerta de la celda con la Llave pequena.\n";
+		return;
+	}
+
+	// ------------- The user is trying to unlock "Cripta bajo la iglesia" -----------------
+
+	if (currentRoom->GetId() != "iglesia_vieja")
+	{
+		output << "No encuentras la cerradura de la cripta aqui.\n";
+		return;
+	}
+
+	Room* crypt = FindRoomById("cripta");
+	if (crypt == nullptr)
+	{
+		std::cerr << "The \"Cripta bajo la iglesia\" room must always exist in the world.\n";
+		isRunning = false;
+		return;
+	}
+
+	if (!crypt->IsLocked())
+	{
+		output << "La cerradura de la cripta ya esta abierta.\n";
+		return;
+	}
+
+	// If we get here it means we are in "Iglesia vieja" and "Cripta bajo la iglesia" it's locked
+	const std::string requiredToolId = "cruz_plata";
+	const Item* silverCross = toolTarget.empty() ? m_player.FindItem(requiredToolId) : m_player.FindItem(toolTarget);
+
+	if (silverCross == nullptr || silverCross->GetId() != requiredToolId)
+	{
+		output << "La cerradura tiene forma de cruz. Necesitas algo que encaje en ella.\n";
+		return;
+	}
+
+	crypt->SetLocked(false);
+	output << "Colocas la Cruz de plata en la cerradura. El acceso a la cripta queda abierto.\n";
+}
+
+void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostream& output)
+{
+	if (GetCurrentRoom() == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	// To turn on a light source item, it must be in player's inventory
+	Item* item = m_player.FindItem(target);
+	if (item == nullptr)
+	{
+		output << "Debes tener el objeto para poder encenderlo.\n";
+		return;
+	}
+
+	if (!item->IsLightSource())
+	{
+		output << item->GetName() << " no se puede encender.\n";
+		return;
+	}
+
+	if (item->IsTurnedOn())
+	{
+		output << item->GetName() << " ya esta encendido.\n";
+		return;
+	}
+
+	// The item used to turn on the light source item must also be in player's inventory
+	if (m_player.FindItem("cerillas") == nullptr)
+	{
+		output << "Necesitas algo con lo que encender " << item->GetName() << ".\n";
+		return;
+	}
+
+	item->SetLightState(LightState::On);
+	output << "Enciendes " << item->GetName() << ".\n";
+}
+
+void GameWorld::LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output)
+{
+	if (GetCurrentRoom() == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	// To charge the item "pistola", it must be in player's inventory
+	Item* item = m_player.FindItem(target);
+	if (item == nullptr)
+	{
+		output << "Debes tener el objeto para poder cargarlo.\n";
+		return;
+	}
+
+	if (!item->IsWeapon())
+	{
+		output << item->GetName() << " no se puede cargar.\n";
+		return;
+	}
+
+	if (item->IsLoaded())
+	{
+		output << item->GetName() << " ya esta cargado.\n";
+		return;
+	}
+
+	// The item "Municion" must also be in player's inventory
+	const std::string ammunitionId = "municion";
+
+	// This is just to allow the command to not mention "municion" so the input could be "Cargar revolver" and also "Cargar revolver con municion"
+	const Item* ammunition = ammunitionTarget.empty() ? m_player.FindItem(ammunitionId) : m_player.FindItem(ammunitionTarget);
+
+	if (ammunition == nullptr || ammunition->GetId() != ammunitionId)
+	{
+		output << "Necesitas la municion adecuada para cargar " << item->GetName() << ".\n";
+		return;
+	}
+
+	m_player.RemoveItemFromInventory(ammunition->GetId());
+	item->SetLoadState(LoadState::Loaded);
+	output << "Cargas " << item->GetName() << ".\n";
+}
+
+void GameWorld::BreakObstacle(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+{
+	Room* currentRoom = GetCurrentRoom();
+	if (currentRoom == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	if (target != "cadenas" && target != "cadena")
+	{
+		output << "No sabes como romper eso.\n";
+		return;
+	}
+
+	if (currentRoom->GetId() != "calle_principal")
+	{
+		output << "No encuentras esas cadenas aqui.\n";
+		return;
+	}
+
+	Room* oldChurch = FindRoomById("iglesia_vieja");
+	if (oldChurch == nullptr)
+	{
+		std::cerr << "The old church must always exist in the world.\n";
+		isRunning = false;
+		return;
+	}
+
+	if (!oldChurch->IsLocked())
+	{
+		output << "Las cadenas ya estan rotas.\n";
+		return;
+	}
+
+	const std::string requiredToolId = "cizalla";
+	const Item* boltCutter = toolTarget.empty() ? m_player.FindItem(requiredToolId) : m_player.FindItem(toolTarget);
+
+	if (boltCutter == nullptr || boltCutter->GetId() != requiredToolId)
+	{
+		output << "Las cadenas son demasiado gruesas para romperlas con las manos.\n";
+		return;
+	}
+
+	oldChurch->SetLocked(false);
+	output << "Cortas las cadenas con la Cizalla oxidada. La entrada a la iglesia queda libre.\n";
 }
 
 void GameWorld::ShowHelp(std::ostream& output) const
@@ -498,6 +827,7 @@ void GameWorld::InitializeWorld()
 	backCell->SetDark(true);
 	backCell->SetLocked(true);
 	crypt->SetDark(true);
+	crypt->SetLocked(true);
 	oldChurch->SetLocked(true);
 
 	/*
@@ -520,11 +850,11 @@ void GameWorld::InitializeWorld()
 
 	std::shared_ptr<Item> lantern = std::make_shared<Item>(
 		"farol",
-		"Farol apagado",
-		"Un farol viejo, pero parece que todavia podria encenderse.");
+		"Farol",
+		"Un farol viejo que aun conserva algo de combustible.");
 	lantern->AddAlias("farol");
 
-	lantern->SetLightSource(true);
+	lantern->SetLightState(LightState::Off);
 
 	std::shared_ptr<Item> matches = std::make_shared<Item>(
 		"cerillas",
@@ -548,18 +878,18 @@ void GameWorld::InitializeWorld()
 	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
 		"caja_fuerte",
 		"Caja fuerte",
-		"Una caja fuerte compacta detras de la barra.");
+		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
 	safeBox->AddAlias("caja");
 
-	safeBox->SetContainer(true);
+	safeBox->SetContainerState(ContainerState::Locked);
 
 	std::shared_ptr<Item> revolver = std::make_shared<Item>(
 		"revolver",
-		"Revolver descargado",
-		"Un revolver frio al tacto. No hay balas en el tambor.");
+		"Revolver",
+		"Un revolver frio al tacto, con el tambor listo para recibir municion.");
 	revolver->AddAlias("revolver");
 
-	revolver->SetWeapon(true);
+	revolver->SetLoadState(LoadState::Unloaded);
 
 	std::shared_ptr<Item> ammunition = std::make_shared<Item>(
 		"municion",

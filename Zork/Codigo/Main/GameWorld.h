@@ -56,6 +56,12 @@ private:
 	void DropItem(const std::string& target, bool& isRunning, std::ostream& output);
 	void PutItemIntoContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
 	void TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
+	void Open(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
+	void OpenItem(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
+	void Unlock(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
+	void TurnOnItem(const std::string& target, bool& isRunning, std::ostream& output);
+	void LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output);
+	void BreakObstacle(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
 	void ShowHelp(std::ostream& output) const;
 
 	/*

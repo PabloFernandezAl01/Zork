@@ -7,6 +7,28 @@
 #include <string>
 #include <vector>
 
+enum class LightState
+{
+	NotApplicable,
+	Off,
+	On
+};
+
+enum class LoadState
+{
+	NotApplicable,
+	Unloaded,
+	Loaded
+};
+
+enum class ContainerState
+{
+	NotApplicable,
+	Open,
+	Closed,
+	Locked
+};
+
 class Item : public Entity
 {
 public:
@@ -17,13 +39,20 @@ public:
 	*  Gameplay attributes GET/SET
 	*/
 	bool IsContainer() const;
-	void SetContainer(bool container);
+	bool IsOpen() const;
+	bool IsLocked() const;
+	ContainerState GetContainerState() const;
+	void SetContainerState(ContainerState state);
 
 	bool IsLightSource() const;
-	void SetLightSource(bool lightSource);
+	bool IsTurnedOn() const;
+	LightState GetLightState() const;
+	void SetLightState(LightState state);
 
 	bool IsWeapon() const;
-	void SetWeapon(bool weapon);
+	bool IsLoaded() const;
+	LoadState GetLoadState() const;
+	void SetLoadState(LoadState state);
 
 	/*
 	*  Helpers to match the user input to actual items
@@ -55,9 +84,9 @@ private:
 	static std::string NormalizeTarget(std::string text);
 	static bool MatchesNormalizedText(const std::string& text, const std::string& normalizedTarget);
 
-	bool m_isContainer;
-	bool m_isLightSource;
-	bool m_isWeapon;
+	ContainerState m_containerState;
+	LightState m_lightState;
+	LoadState m_loadState;
 
 	std::vector<std::string> m_aliases;
 	std::vector<std::shared_ptr<Item>> m_containedItems;

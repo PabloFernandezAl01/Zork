@@ -6,40 +6,75 @@
 
 Item::Item(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
-	, m_isContainer(false)
-	, m_isLightSource(false)
-	, m_isWeapon(false)
+	, m_containerState(ContainerState::NotApplicable)
+	, m_lightState(LightState::NotApplicable)
+	, m_loadState(LoadState::NotApplicable)
 {
 }
 
 bool Item::IsContainer() const
 {
-	return m_isContainer;
+	return m_containerState != ContainerState::NotApplicable;
+}
+
+bool Item::IsOpen() const
+{
+	return m_containerState == ContainerState::Open;
+}
+
+bool Item::IsLocked() const
+{
+	return m_containerState == ContainerState::Locked;
+}
+
+ContainerState Item::GetContainerState() const
+{
+	return m_containerState;
+}
+
+void Item::SetContainerState(ContainerState state)
+{
+	m_containerState = state;
 }
 
 bool Item::IsLightSource() const
 {
-	return m_isLightSource;
+	return m_lightState != LightState::NotApplicable;
+}
+
+bool Item::IsTurnedOn() const
+{
+	return m_lightState == LightState::On;
+}
+
+LightState Item::GetLightState() const
+{
+	return m_lightState;
+}
+
+void Item::SetLightState(LightState state)
+{
+	m_lightState = state;
 }
 
 bool Item::IsWeapon() const
 {
-	return m_isWeapon;
+	return m_loadState != LoadState::NotApplicable;
 }
 
-void Item::SetContainer(bool container)
+bool Item::IsLoaded() const
 {
-	m_isContainer = container;
+	return m_loadState == LoadState::Loaded;
 }
 
-void Item::SetLightSource(bool lightSource)
+LoadState Item::GetLoadState() const
 {
-	m_isLightSource = lightSource;
+	return m_loadState;
 }
 
-void Item::SetWeapon(bool weapon)
+void Item::SetLoadState(LoadState state)
 {
-	m_isWeapon = weapon;
+	m_loadState = state;
 }
 
 const std::vector<std::string>& Item::GetAliases() const
@@ -56,8 +91,30 @@ void Item::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);
 
-	if (!m_isContainer)
+	if (IsLightSource())
 	{
+		output << "Estado: " << (IsTurnedOn() ? "encendido" : "apagado") << ".\n";
+	}
+
+	if (IsWeapon())
+	{
+		output << "Estado: " << (IsLoaded() ? "cargado" : "descargado") << ".\n";
+	}
+
+	if (!IsContainer())
+	{
+		return;
+	}
+
+	if (IsLocked())
+	{
+		output << "Esta bloqueado.\n";
+		return;
+	}
+
+	if (!IsOpen())
+	{
+		output << "Esta cerrado.\n";
 		return;
 	}
 
@@ -80,7 +137,7 @@ const std::vector<std::shared_ptr<Item>>& Item::GetContainedItems() const
 
 Item* Item::FindItem(const std::string& target)
 {
-	if (!m_isContainer)
+	if (!IsContainer() || !IsOpen())
 	{
 		return nullptr;
 	}
@@ -96,7 +153,7 @@ Item* Item::FindItem(const std::string& target)
 
 const Item* Item::FindItem(const std::string& target) const
 {
-	if (!m_isContainer)
+	if (!IsContainer() || !IsOpen())
 	{
 		return nullptr;
 	}
@@ -112,7 +169,7 @@ const Item* Item::FindItem(const std::string& target) const
 
 void Item::AddItem(const std::shared_ptr<Item>& item) 
 {
-	if (!m_isContainer) 
+	if (!IsContainer() || !IsOpen())
 		return; // <---- GameWorld logic is in charge of checking if an item can contain another items. This return should never be reached. 
 
 	m_containedItems.push_back(item);
@@ -120,7 +177,7 @@ void Item::AddItem(const std::shared_ptr<Item>& item)
 
 std::shared_ptr<Item> Item::RemoveItem(const std::string& itemId)
 {
-	if (!m_isContainer)
+	if (!IsContainer() || !IsOpen())
 		return nullptr; // <---- GameWorld logic is in charge of checking if an item can contain another items. This return should never be reached.
 
 	// Search for the item inside *this* item

@@ -352,12 +352,16 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 		return;
 	}
 
-	// Try to find the container item
-	// IMPORTANT: The container item must be in player's inventory
+	// Try to find the container item (could be in player inventory or in current room)
 	Item* container = m_player.FindItem(containerTarget);
 	if (container == nullptr)
 	{
-		output << "No tienes ese objeto.\n";
+		container = room->FindItem(containerTarget);
+	}
+
+	if (container == nullptr)
+	{
+		output << "No encuentras ese objeto aqui.\n";
 		return;
 	}
 
@@ -369,7 +373,7 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 	}
 
 	// Try to find the target item in the container item
-	Item* item = container->FindItem(containerTarget);
+	Item* item = container->FindItem(itemTarget);
 	if (item == nullptr)
 	{
 		output << "Este objeto no esta en " << container->GetName() << ".\n";

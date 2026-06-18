@@ -205,18 +205,6 @@ bool Parser::TryParseDirection(const std::string& text, Direction& direction)
 		return true;
 	}
 
-	if (text == "entrar")
-	{
-		direction = Direction::Enter;
-		return true;
-	}
-
-	if (text == "salir")
-	{
-		direction = Direction::Exit;
-		return true;
-	}
-
 	return false;
 }
 

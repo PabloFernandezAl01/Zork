@@ -15,10 +15,6 @@ std::string DirectionUtils::ToText(Direction direction)
 		return "este";
 	case Direction::West:
 		return "oeste";
-	case Direction::Enter:
-		return "entrar";
-	case Direction::Exit:
-		return "salir";
 	default:
 		return "desconocida";
 	}

@@ -811,7 +811,7 @@ GameResult GameWorld::ShootTarget(const std::string& target, const std::string& 
 GameResult GameWorld::ShowHelp(std::ostream& output) const
 {
 	output << "Comandos disponibles:\n";
-	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o, entrar, salir\n";
+	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o\n";
 	output << "- Observacion: mirar/m, examinar/x [objeto]\n";
 	output << "- Inventario: inventario/i, coger [objeto], soltar [objeto]\n";
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
@@ -889,7 +889,7 @@ void GameWorld::InitializeWorld()
 	std::shared_ptr<Room> crypt = std::make_shared<Room>(
 		RoomIds::Crypt,
 		"Cripta al norte de la iglesia",
-		"Un pasadizo de piedra conduce a una cripta olvidada. En la oscuridad, algo espera.");
+		"Un pasadizo de piedra conduce a una cripta olvidada. El sheriff mantiene a Elias cautivo y te apunta con su revolver.");
 
 	AddRoom(townEntrance);
 	AddRoom(abandonedStable);
@@ -996,7 +996,7 @@ void GameWorld::InitializeWorld()
 	std::shared_ptr<Item> bartenderNote = std::make_shared<Item>(
 		ItemIds::BartenderNote,
 		"Nota del tabernero",
-		"Una nota escrita con pulso tembloroso por el antiguo tabernero.");
+		"La nota dice: \"El sheriff se lleva a cualquiera que hace preguntas. Anoche oi a un hombre llamado Elias gritar desde la celda trasera de su oficina.\"");
 	bartenderNote->AddAlias("nota");
 	bartenderNote->AddAlias("nota del tabernero");
 	bartenderNote->SetRequiresLightToExamine(true);
@@ -1028,7 +1028,7 @@ void GameWorld::InitializeWorld()
 	std::shared_ptr<Item> sheriffDiary = std::make_shared<Item>(
 		ItemIds::SheriffDiary,
 		"Diario del sheriff",
-		"Un diario manchado con entradas cada vez mas desesperadas.");
+		"Una entrada reciente dice: \"He trasladado a Elias a la cripta bajo la iglesia. Oculte en la celda la cruz de plata que abre la cerradura del muro norte.\"");
 	sheriffDiary->AddAlias("diario");
 	sheriffDiary->SetRequiresLightToExamine(true);
 

@@ -15,9 +15,7 @@ enum class Direction
 	North,
 	South,
 	East,
-	West,
-	Enter,
-	Exit
+	West
 };
 
 struct DirectionUtils

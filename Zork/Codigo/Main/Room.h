@@ -62,6 +62,9 @@ public:
 	*/
 	void PrintInformation(std::ostream& output) const override;
 
+	// Prints the directions that connect the current room with adjacent rooms.
+	void PrintExists(std::ostream& output) const;
+
 	void AddExit(Direction direction, const std::string& targetRoomId);
 
 	/*

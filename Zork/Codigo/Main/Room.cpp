@@ -126,6 +126,21 @@ void Room::PrintInformation(std::ostream& output) const
 	}
 }
 
+void Room::PrintExists(std::ostream& output) const
+{
+	if (m_exits.empty())
+	{
+		output << "No hay conexiones desde aqui.\n";
+		return;
+	}
+
+	output << "Conexiones disponibles:\n";
+	for (const auto& exit : m_exits)
+	{
+		output << "- " << DirectionUtils::ToText(exit.first) << '\n';
+	}
+}
+
 void Room::AddExit(Direction direction, const std::string& targetRoomId)
 {
 	m_exits[direction] = targetRoomId;

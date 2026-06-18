@@ -182,6 +182,10 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 	if (item != nullptr)
 	{
 		item->PrintInformation(output);
+		if (item->GetId() == "mapa_rasgado")
+		{
+			room->PrintExists(output);
+		}
 		return;
 	}
 
@@ -208,6 +212,10 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 
 	// If the item was found, show it's information (name, descripction and items inside, if any)
 	item->PrintInformation(output);
+	if (item->GetId() == "mapa_rasgado")
+	{
+		room->PrintExists(output);
+	}
 }
 
 void GameWorld::ShowInventory(std::ostream& output) const
@@ -781,6 +789,7 @@ void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget
 
 	weapon->SetLoadState(LoadState::Unloaded);
 	output << "Disparas al sheriff antes de que pueda reaccionar. Elias queda libre.\n";
+	output << "Has ganado.\n";
 	isRunning = false;
 }
 
@@ -956,6 +965,16 @@ void GameWorld::InitializeWorld()
 		"Una cizalla pesada con las hojas comidas por el oxido.");
 	boltCutter->AddAlias("cizalla");
 
+	std::shared_ptr<Item> potatoSack = std::make_shared<Item>(
+		"saco_patatas",
+		"Saco de patatas podridas",
+		"Un saco de arpillera lleno de patatas podridas. El olor resulta insoportable.");
+	potatoSack->AddAlias("saco");
+	potatoSack->AddAlias("saco de patatas");
+	potatoSack->AddAlias("patatas");
+
+	potatoSack->SetContainerState(ContainerState::Closed);
+
 	std::shared_ptr<Item> smallKey = std::make_shared<Item>(
 		"llave",
 		"Llave pequena",
@@ -963,12 +982,21 @@ void GameWorld::InitializeWorld()
 	smallKey->AddAlias("llave");
 	smallKey->AddAlias("llave pequena");
 
+	std::shared_ptr<Item> bartenderNote = std::make_shared<Item>(
+		"nota_tabernero",
+		"Nota del tabernero",
+		"Una nota escrita con pulso tembloroso por el antiguo tabernero.");
+	bartenderNote->AddAlias("nota");
+	bartenderNote->AddAlias("nota del tabernero");
+
 	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
 		"caja_fuerte",
 		"Caja fuerte",
 		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
 	safeBox->AddAlias("caja");
 
+	safeBox->SetContainerState(ContainerState::Open);
+	safeBox->AddItem(bartenderNote);
 	safeBox->SetContainerState(ContainerState::Locked);
 
 	std::shared_ptr<Item> revolver = std::make_shared<Item>(
@@ -1008,6 +1036,7 @@ void GameWorld::InitializeWorld()
 	abandonedStable->AddItem(lantern);
 	abandonedStable->AddItem(matches);
 	mainStreet->AddItem(boltCutter);
+	mainStreet->AddItem(potatoSack);
 	saloon->AddItem(smallKey);
 	saloon->AddItem(safeBox);
 	sheriffOffice->AddItem(revolver);
@@ -1021,7 +1050,9 @@ void GameWorld::InitializeWorld()
 	AddItem(lantern);
 	AddItem(matches);
 	AddItem(boltCutter);
+	AddItem(potatoSack);
 	AddItem(smallKey);
+	AddItem(bartenderNote);
 	AddItem(safeBox);
 	AddItem(revolver);
 	AddItem(ammunition);

@@ -51,7 +51,7 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 		BreakObstacle(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
 	case CommandType::Shoot:
-		// TODO
+		Shoot(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
 	case CommandType::Help:
 		ShowHelp(output);
@@ -732,6 +732,56 @@ void GameWorld::BreakObstacle(const std::string& target, const std::string& tool
 
 	oldChurch->SetLocked(false);
 	output << "Cortas las cadenas con la Cizalla oxidada. La entrada a la iglesia queda libre.\n";
+}
+
+void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget, bool& isRunning, std::ostream& output)
+{
+	Room* currentRoom = GetCurrentRoom();
+	if (currentRoom == nullptr)
+	{
+		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
+		isRunning = false;
+		return;
+	}
+
+	if (target != "sheriff")
+	{
+		output << "No sabes a que intentas disparar.\n";
+		return;
+	}
+
+	if (!CanPlayerSee(*currentRoom))
+	{
+		output << "No ves nada.\n";
+		return;
+	}
+
+	if (currentRoom->GetId() != "cripta")
+	{
+		output << "El sheriff no esta aqui.\n";
+		return;
+	}
+
+	const std::string requiredWeaponId = "revolver";
+	Item* weapon = weaponTarget.empty() ? m_player.FindItem(requiredWeaponId) : m_player.FindItem(weaponTarget);
+
+	if (weapon == nullptr || weapon->GetId() != requiredWeaponId)
+	{
+		output << "Necesitas el Revolver para disparar al sheriff.\n";
+		return;
+	}
+
+	if (!weapon->IsLoaded())
+	{
+		output << "Aprietas el gatillo, pero el Revolver esta descargado. El Sheriff te dispara y luego remata la tarea con Elias\n";
+		output << "Has perdido.\n";
+		isRunning = false;
+		return;
+	}
+
+	weapon->SetLoadState(LoadState::Unloaded);
+	output << "Disparas al sheriff antes de que pueda reaccionar. Elias queda libre.\n";
+	isRunning = false;
 }
 
 void GameWorld::ShowHelp(std::ostream& output) const

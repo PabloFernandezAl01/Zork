@@ -63,6 +63,7 @@ private:
 	void TurnOnItem(const std::string& target, bool& isRunning, std::ostream& output);
 	void LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output);
 	void BreakObstacle(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
+	void Shoot(const std::string& target, const std::string& weaponTarget, bool& isRunning, std::ostream& output);
 	void ShowHelp(std::ostream& output) const;
 
 	/*

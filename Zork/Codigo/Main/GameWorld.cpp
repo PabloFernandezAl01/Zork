@@ -123,23 +123,22 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 		return GameResult::FatalError;
 	}
 
-	// Checks if there is a Room in that direction
-	std::string nextRoomId;
-	if (!currentRoom->TryGetExit(direction, nextRoomId))
+	// Checks if there is an exit in that direction
+	const Exit* exit = currentRoom->FindExit(direction);
+	if (exit == nullptr)
 	{
 		output << "No puedes ir hacia " << DirectionUtils::ToText(direction) << ". El mapa te puede dar alguna pista...\n";
 		return GameResult::Running;
 	}
 
-	Room* nextRoom = FindRoomById(nextRoomId);
+	Room* nextRoom = FindRoomById(exit->targetRoomId);
 	if (nextRoom == nullptr) // <--------- Just a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "The pointer to nextRoom must never be nullptr.\n";
 		return GameResult::FatalError;
 	}
 
-	// Room-specific gameplay logic
-	if (nextRoom->IsLocked())
+	if (exit->isLocked)
 	{
 		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado.\n";
 		return GameResult::Running;
@@ -535,14 +534,14 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 			return GameResult::Running;
 		}
 
-		Room* backCell = FindRoomById("celda_trasera");
-		if (backCell == nullptr)
+		Exit* cellExit = currentRoom->FindExit(Direction::East);
+		if (cellExit == nullptr)
 		{
-			std::cerr << "The \"Celda trasera\" room must always exist in the world.\n";
+			std::cerr << "The exit to \"Celda trasera\" must always exist.\n";
 			return GameResult::FatalError;
 		}
 
-		if (!backCell->IsLocked())
+		if (!cellExit->isLocked)
 		{
 			output << "La puerta de la celda ya esta abierta.\n";
 			return GameResult::Running;
@@ -558,7 +557,7 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 			return GameResult::Running;
 		}
 
-		backCell->SetLocked(false);
+		cellExit->isLocked = false;
 		output << "Abres la puerta de la celda con la Llave pequena.\n";
 		return GameResult::Running;
 	}
@@ -571,14 +570,14 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		return GameResult::Running;
 	}
 
-	Room* crypt = FindRoomById("cripta");
-	if (crypt == nullptr)
+	Exit* cryptExit = currentRoom->FindExit(Direction::North);
+	if (cryptExit == nullptr)
 	{
-		std::cerr << "The \"Cripta al norte de la iglesia\" room must always exist in the world.\n";
+		std::cerr << "The exit to \"Cripta al norte de la iglesia\" must always exist.\n";
 		return GameResult::FatalError;
 	}
 
-	if (!crypt->IsLocked())
+	if (!cryptExit->isLocked)
 	{
 		output << "La cerradura de la cripta ya esta abierta.\n";
 		return GameResult::Running;
@@ -594,7 +593,7 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		return GameResult::Running;
 	}
 
-	crypt->SetLocked(false);
+	cryptExit->isLocked = false;
 	output << "Colocas la Cruz de plata en la cerradura. El acceso a la cripta queda abierto.\n";
 	return GameResult::Running;
 }
@@ -714,14 +713,14 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 		return GameResult::Running;
 	}
 
-	Room* oldChurch = FindRoomById("iglesia_vieja");
-	if (oldChurch == nullptr)
+	Exit* churchExit = currentRoom->FindExit(Direction::North);
+	if (churchExit == nullptr)
 	{
-		std::cerr << "The old church must always exist in the world.\n";
+		std::cerr << "The exit to the old church must always exist.\n";
 		return GameResult::FatalError;
 	}
 
-	if (!oldChurch->IsLocked())
+	if (!churchExit->isLocked)
 	{
 		output << "Las cadenas ya estan rotas.\n";
 		return GameResult::Running;
@@ -736,7 +735,7 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 		return GameResult::Running;
 	}
 
-	oldChurch->SetLocked(false);
+	churchExit->isLocked = false;
 	output << "Cortas las cadenas con la Cizalla oxidada. La entrada a la iglesia queda libre.\n";
 	return GameResult::Running;
 }
@@ -898,17 +897,17 @@ void GameWorld::InitializeWorld()
 	mainStreet->AddExit(Direction::South, "entrada_pueblo");
 	mainStreet->AddExit(Direction::West, "saloon");
 	mainStreet->AddExit(Direction::East, "oficina_sheriff");
-	mainStreet->AddExit(Direction::North, "iglesia_vieja");
+	mainStreet->AddExit(Direction::North, "iglesia_vieja", true);
 
 	saloon->AddExit(Direction::East, "calle_principal");
 
 	sheriffOffice->AddExit(Direction::West, "calle_principal");
-	sheriffOffice->AddExit(Direction::East, "celda_trasera");
+	sheriffOffice->AddExit(Direction::East, "celda_trasera", true);
 
 	backCell->AddExit(Direction::West, "oficina_sheriff");
 
 	oldChurch->AddExit(Direction::South, "calle_principal");
-	oldChurch->AddExit(Direction::North, "cripta");
+	oldChurch->AddExit(Direction::North, "cripta", true);
 
 	crypt->AddExit(Direction::South, "iglesia_vieja");
 
@@ -918,10 +917,7 @@ void GameWorld::InitializeWorld()
 	*/
 
 	backCell->SetDark(true);
-	backCell->SetLocked(true);
 	crypt->SetDark(true);
-	crypt->SetLocked(true);
-	oldChurch->SetLocked(true);
 
 	/*
 	*                    ITEMS CREATION & CONFIGURATION

@@ -26,6 +26,15 @@ struct DirectionUtils
 	static std::string ToText(Direction direction);
 };
 
+struct Exit
+{
+	Exit();
+	Exit(const std::string& targetRoomId, bool locked);
+
+	std::string targetRoomId;
+	bool isLocked;
+};
+
 class Room : public Entity
 {
 public:
@@ -38,13 +47,10 @@ public:
 	bool IsDark() const;
 	void SetDark(bool dark);
 
-	bool IsLocked() const;
-	void SetLocked(bool locked);
+	Exit* FindExit(Direction direction);
+	const Exit* FindExit(Direction direction) const;
 
-	// Checks if there is a room in a given direction
-	bool TryGetExit(Direction direction, std::string& outRoomId) const;
-
-	const std::map<Direction, std::string>& GetExits() const;
+	const std::map<Direction, Exit>& GetExits() const;
 	const std::vector<std::shared_ptr<Item>>& GetItems() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
@@ -61,7 +67,7 @@ public:
 	// Prints the directions that connect the current room with adjacent rooms.
 	void PrintExists(std::ostream& output) const;
 
-	void AddExit(Direction direction, const std::string& targetRoomId);
+	void AddExit(Direction direction, const std::string& targetRoomId, bool locked = false);
 
 	/*
 	* Item addition and removing
@@ -72,8 +78,7 @@ public:
 private:
 
 	bool m_isDark;
-	bool m_isLocked;
 
-	std::map<Direction, std::string> m_exits;
+	std::map<Direction, Exit> m_exits;
 	std::vector<std::shared_ptr<Item>> m_items;
 };

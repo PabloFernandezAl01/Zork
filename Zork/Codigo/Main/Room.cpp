@@ -24,10 +24,20 @@ std::string DirectionUtils::ToText(Direction direction)
 	}
 }
 
+Exit::Exit()
+	: isLocked(false)
+{
+}
+
+Exit::Exit(const std::string& targetRoomId, bool locked)
+	: targetRoomId(targetRoomId)
+	, isLocked(locked)
+{
+}
+
 Room::Room(const std::string& id, const std::string& name, const std::string& description)
 	: Entity(id, name, description)
 	, m_isDark(false)
-	, m_isLocked(false)
 {
 }
 
@@ -41,31 +51,21 @@ void Room::SetDark(bool dark)
 	m_isDark = dark;
 }
 
-bool Room::IsLocked() const
-{
-	return m_isLocked;
-}
-
-void Room::SetLocked(bool locked)
-{
-	m_isLocked = locked;
-}
-
-const std::map<Direction, std::string>& Room::GetExits() const
-{
-	return m_exits;
-}
-
-bool Room::TryGetExit(Direction direction, std::string& outRoomId) const
+Exit* Room::FindExit(Direction direction)
 {
 	const auto it = m_exits.find(direction);
-	if (it == m_exits.end())
-	{
-		return false;
-	}
+	return it != m_exits.end() ? &it->second : nullptr;
+}
 
-	outRoomId = it->second;
-	return true;
+const Exit* Room::FindExit(Direction direction) const
+{
+	const auto it = m_exits.find(direction);
+	return it != m_exits.end() ? &it->second : nullptr;
+}
+
+const std::map<Direction, Exit>& Room::GetExits() const
+{
+	return m_exits;
 }
 
 const std::vector<std::shared_ptr<Item>>& Room::GetItems() const
@@ -128,9 +128,9 @@ void Room::PrintExists(std::ostream& output) const
 	}
 }
 
-void Room::AddExit(Direction direction, const std::string& targetRoomId)
+void Room::AddExit(Direction direction, const std::string& targetRoomId, bool locked)
 {
-	m_exits[direction] = targetRoomId;
+	m_exits[direction] = Exit(targetRoomId, locked);
 }
 
 void Room::AddItem(const std::shared_ptr<Item>& item)

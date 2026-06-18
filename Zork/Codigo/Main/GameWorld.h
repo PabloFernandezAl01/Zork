@@ -11,6 +11,15 @@
 
 struct Command;
 
+enum class GameResult
+{
+	Running,
+	Victory,
+	Defeat,
+	Quit,
+	FatalError
+};
+
 /*
 GameWorld owns the main entities and coordinates gameplay rules.
 */
@@ -22,10 +31,10 @@ public:
 	GameWorld();
 
 	// Entry point for the class, called from WestZork::Run()
-	void ExecuteCommand(const Command& command, bool& isRunning, std::ostream& output);
+	GameResult ExecuteCommand(const Command& command, std::ostream& output);
 
 	// Shows the current room information (name, desc, items, exists)
-	void Look(std::ostream& output, bool& isRunning) const;
+	GameResult Look(std::ostream& output) const;
 
 private:
 	
@@ -50,21 +59,21 @@ private:
 	/*
 	*  Commands handling
 	*/
-	void MovePlayer(Direction direction, bool& isRunning, std::ostream& output);
-	void Examine(const std::string& target, bool& isRunning, std::ostream& output) const;
-	void ShowInventory(std::ostream& output) const;
-	void TakeItem(const std::string& target, bool& isRunning, std::ostream& output);
-	void DropItem(const std::string& target, bool& isRunning, std::ostream& output);
-	void PutItemIntoContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
-	void TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output);
-	void Open(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
-	void OpenItem(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
-	void Unlock(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
-	void TurnOnItem(const std::string& target, bool& isRunning, std::ostream& output);
-	void LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output);
-	void BreakObstacle(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output);
-	void Shoot(const std::string& target, const std::string& weaponTarget, bool& isRunning, std::ostream& output);
-	void ShowHelp(std::ostream& output) const;
+	GameResult MovePlayer(Direction direction, std::ostream& output);
+	GameResult Examine(const std::string& target, std::ostream& output) const;
+	GameResult ShowInventory(std::ostream& output) const;
+	GameResult TakeItem(const std::string& target, std::ostream& output);
+	GameResult DropItem(const std::string& target, std::ostream& output);
+	GameResult PutItemIntoContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output);
+	GameResult TakeItemFromContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output);
+	GameResult Open(const std::string& target, const std::string& toolTarget, std::ostream& output);
+	GameResult OpenItem(const std::string& target, const std::string& toolTarget, std::ostream& output);
+	GameResult Unlock(const std::string& target, const std::string& toolTarget, std::ostream& output);
+	GameResult TurnOnItem(const std::string& target, std::ostream& output);
+	GameResult LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output);
+	GameResult BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output);
+	GameResult Shoot(const std::string& target, const std::string& weaponTarget, std::ostream& output);
+	GameResult ShowHelp(std::ostream& output) const;
 
 	/*
 	*  WORLD SETUP

@@ -7,19 +7,18 @@ WestZork::WestZork() {}
 
 void WestZork::Run()
 {
-	bool isRunning = true;
-
 	std::cout << "West Zork\n";
 	std::cout << "Escribe \"ayuda\" para ver los comandos disponibles.\n\n";
-	m_world.Look(std::cout, isRunning);
+	GameResult result = m_world.Look(std::cout);
 
-	while (isRunning)
+	while (result == GameResult::Running)
 	{
 		std::cout << "\n> ";
 
 		std::string input;
 		if (!std::getline(std::cin, input))
 		{
+			result = GameResult::Quit;
 			break;
 		}
 
@@ -27,8 +26,25 @@ void WestZork::Run()
 		const Command command = m_parser.Parse(input);
 
 		// Take the required action from that command, if any
-		m_world.ExecuteCommand(command, isRunning, std::cout);
+		result = m_world.ExecuteCommand(command, std::cout);
 	}
 
-	std::cout << "Fin de la partida.\n";
+	switch (result)
+	{
+	case GameResult::Victory:
+		std::cout << "Has ganado.\n";
+		break;
+	case GameResult::Defeat:
+		std::cout << "Has perdido.\n";
+		break;
+	case GameResult::Quit:
+		std::cout << "Fin de la partida.\n";
+		break;
+	case GameResult::FatalError:
+		std::cout << "La partida ha terminado debido a un error interno.\n";
+		break;
+	case GameResult::Running:
+		std::cout << "Fin de la partida.\n";
+		break;
+	}
 }

@@ -10,58 +10,43 @@ GameWorld::GameWorld()
 	InitializeWorld();
 }
 
-void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ostream& output)
+GameResult GameWorld::ExecuteCommand(const Command& command, std::ostream& output)
 {
 	switch (command.type)
 	{
 	case CommandType::Move:
-		MovePlayer(command.direction, isRunning, output);
-		break;
+		return MovePlayer(command.direction, output);
 	case CommandType::Look:
-		Look(output, isRunning);
-		break;
+		return Look(output);
 	case CommandType::Examine:
-		Examine(command.firstTarget, isRunning, output);
-		break;
+		return Examine(command.firstTarget, output);
 	case CommandType::Inventory:
-		ShowInventory(output);
-		break;
+		return ShowInventory(output);
 	case CommandType::Take:
-		TakeItem(command.firstTarget, isRunning, output);
-		break;
+		return TakeItem(command.firstTarget, output);
 	case CommandType::Drop:
-		DropItem(command.firstTarget, isRunning, output);
-		break;
+		return DropItem(command.firstTarget, output);
 	case CommandType::Put:
-		PutItemIntoContainer(command.firstTarget, isRunning, command.secondTarget, output);
-		break;
+		return PutItemIntoContainer(command.firstTarget, command.secondTarget, output);
 	case CommandType::Remove:
-		TakeItemFromContainer(command.firstTarget, isRunning, command.secondTarget, output);
-		break;
+		return TakeItemFromContainer(command.firstTarget, command.secondTarget, output);
 	case CommandType::Open:
-		Open(command.firstTarget, command.secondTarget, isRunning, output);
-		break;
+		return Open(command.firstTarget, command.secondTarget, output);
 	case CommandType::TurnOn:
-		TurnOnItem(command.firstTarget, isRunning, output);
-		break;
+		return TurnOnItem(command.firstTarget, output);
 	case CommandType::Load:
-		LoadItem(command.firstTarget, command.secondTarget, isRunning, output);
-		break;
+		return LoadItem(command.firstTarget, command.secondTarget, output);
 	case CommandType::Break:
-		BreakObstacle(command.firstTarget, command.secondTarget, isRunning, output);
-		break;
+		return BreakObstacle(command.firstTarget, command.secondTarget, output);
 	case CommandType::Shoot:
-		Shoot(command.firstTarget, command.secondTarget, isRunning, output);
-		break;
+		return Shoot(command.firstTarget, command.secondTarget, output);
 	case CommandType::Help:
-		ShowHelp(output);
-		break;
+		return ShowHelp(output);
 	case CommandType::Quit:
-		isRunning = false;
-		break;
+		return GameResult::Quit;
 	default:
 		output << "No he entendido eso.\n";
-		break;
+		return GameResult::Running;
 	}
 }
 
@@ -108,14 +93,13 @@ void GameWorld::AddItem(const std::shared_ptr<Item>& item)
 	m_items[item->GetId()] = item;
 }
 
-void GameWorld::Look(std::ostream& output, bool& isRunning) const
+GameResult GameWorld::Look(std::ostream& output) const
 {
 	const Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen. 
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (CanPlayerSee(*room))
@@ -126,16 +110,17 @@ void GameWorld::Look(std::ostream& output, bool& isRunning) const
 	{
 		output << "Esta demasiado oscuro. Necesitas una fuente de luz encendida para poder ver.\n";
 	}
+
+	return GameResult::Running;
 }
 
-void GameWorld::MovePlayer(Direction direction, bool& isRunning, std::ostream& output)
+GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	if (currentRoom == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen. 
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// Checks if there is a Room in that direction
@@ -143,37 +128,35 @@ void GameWorld::MovePlayer(Direction direction, bool& isRunning, std::ostream& o
 	if (!currentRoom->TryGetExit(direction, nextRoomId))
 	{
 		output << "No puedes ir hacia " << DirectionUtils::ToText(direction) << ". El mapa te puede dar alguna pista...\n";
-		return;
+		return GameResult::Running;
 	}
 
 	Room* nextRoom = FindRoomById(nextRoomId);
 	if (nextRoom == nullptr) // <--------- Just a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "The pointer to nextRoom must never be nullptr.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// Room-specific gameplay logic
 	if (nextRoom->IsLocked())
 	{
 		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Actually changes player room
 	m_player.SetCurrentRoomId(nextRoom->GetId());
-	Look(output, isRunning);
+	return Look(output);
 }
 
-void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream& output) const
+GameResult GameWorld::Examine(const std::string& target, std::ostream& output) const
 {
 	const Room* room = GetCurrentRoom(); 
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// Inventory items can generally be examined by touch even in a dark room.
@@ -184,13 +167,13 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 		if (!CanPlayerSee(*room))
 		{
 			output << "Esta demasiado oscuro para examinar nada de la sala.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		if (!IsAValidItem(target))
 		{
 			output << "No se lo que intentas examinar.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		// In WestZork every item is unique, so after checking the inventory the
@@ -199,14 +182,14 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 		if (item == nullptr)
 		{
 			output << "No encuentras lo que intentas examinar.\n";
-			return;
+			return GameResult::Running;
 		}
 	}
 
 	if (!CanPlayerSee(*room) && item->RequiresLightToExamine())
 	{
 		output << "Esta demasiado oscuro para leer " << item->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// If the item was found, show it's information (name, descripction and items inside, if any)
@@ -215,93 +198,95 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 	{
 		room->PrintExists(output);
 	}
+
+	return GameResult::Running;
 }
 
-void GameWorld::ShowInventory(std::ostream& output) const
+GameResult GameWorld::ShowInventory(std::ostream& output) const
 {
 	m_player.PrintInformation(output);
+	return GameResult::Running;
 }
 
-void GameWorld::TakeItem(const std::string& target, bool& isRunning, std::ostream& output)
+GameResult GameWorld::TakeItem(const std::string& target, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!CanPlayerSee(*room))
 	{
 		output << "Esta demasiado oscuro para encontrar objetos en la sala.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!IsAValidItem(target))
 	{
 		output << "No se lo que intentas coger.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	const Item* item = room->FindItem(target);
 	if (item == nullptr)
 	{
 		output << "No hay ningun \"" << target << "\" en " << room->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	m_player.AddItemToInventory(room->RemoveItem(item->GetId()));
 	output << "Has cogido " << item->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::DropItem(const std::string& target, bool& isRunning, std::ostream& output)
+GameResult GameWorld::DropItem(const std::string& target, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!IsAValidItem(target))
 	{
 		output << "No se lo que intentas soltar.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	const Item* item = m_player.FindItem(target);
 	if (item == nullptr)
 	{
 		output << "No tienes ese objeto.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	room->AddItem(m_player.RemoveItemFromInventory(item->GetId()));
 	output << "Sueltas " << item->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output)
+GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!IsAValidItem(itemTarget))
 	{
 		output << "No se lo que intentas meter.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!IsAValidItem(containerTarget))
 	{
 		output << "No se donde intentas meterlo.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Try to find the item to move it into the item container
@@ -310,7 +295,7 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 	if (item == nullptr)
 	{
 		output << "No tienes ese objeto.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Try to find the item container (could be in player inventory or in current room)
@@ -320,7 +305,7 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 		if (!CanPlayerSee(*room))
 		{
 			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		containerItem = room->FindItem(containerTarget);
@@ -330,65 +315,65 @@ void GameWorld::PutItemIntoContainer(const std::string& itemTarget, bool& isRunn
 	if (containerItem == nullptr)
 	{
 		output << "No tienes el objeto donde quieres meter " << item->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// If found, check if it's really a container item
 	if (!containerItem->IsContainer())
 	{
 		output << containerItem->GetName() << " no puede contener objetos.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (containerItem->IsLocked())
 	{
 		output << containerItem->GetName() << " esta bloqueado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!containerItem->IsOpen())
 	{
 		output << containerItem->GetName() << " esta cerrado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// If found, check if the item it's not the same as the container item ("Meter botella en botella")
 	if (item->GetId() == containerItem->GetId())
 	{
 		output << "No puedes meter un objeto dentro de si mismo.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (item->IsContainer())
 	{
 		output << "No puedes meter " << item->GetName() << " en " << containerItem->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	containerItem->AddItem(m_player.RemoveItemFromInventory(item->GetId()));
 	output << "Metes " << item->GetName() << " en " << containerItem->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRunning, const std::string& containerTarget, std::ostream& output)
+GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!IsAValidItem(containerTarget))
 	{
 		output << "No se de donde intentas sacar eso.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!IsAValidItem(itemTarget))
 	{
 		output << "No se lo que intentas sacar.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Try to find the container item (could be in player inventory or in current room)
@@ -398,7 +383,7 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 		if (!CanPlayerSee(*room))
 		{
 			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		container = room->FindItem(containerTarget);
@@ -407,26 +392,26 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 	if (container == nullptr)
 	{
 		output << "No encuentras ese objeto aqui.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Check first if it's actually a container item
 	if (!container->IsContainer())
 	{
 		output << "No se puede guardar nada en " << container->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (container->IsLocked())
 	{
 		output << container->GetName() << " esta bloqueado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!container->IsOpen())
 	{
 		output << container->GetName() << " esta cerrado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// Try to find the target item in the container item
@@ -434,14 +419,15 @@ void GameWorld::TakeItemFromContainer(const std::string& itemTarget, bool& isRun
 	if (item == nullptr)
 	{
 		output << "Este objeto no esta en " << container->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	m_player.AddItemToInventory(container->RemoveItem(item->GetId()));
 	output << "Sacas " << item->GetName() << " de " << container->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::Open(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::Open(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	const bool targetsRoomLock =
 		target == "celda" ||
@@ -452,22 +438,19 @@ void GameWorld::Open(const std::string& target, const std::string& toolTarget, b
 	if (targetsRoomLock)
 	{
 		// This handles commands to unlock items or rooms
-		Unlock(target, toolTarget, isRunning, output);
+		return Unlock(target, toolTarget, output);
 	}
-	else
-	{
-		OpenItem(target, toolTarget, isRunning, output);
-	}
+
+	return OpenItem(target, toolTarget, output);
 }
 
-void GameWorld::OpenItem(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::OpenItem(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
 	if (room == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// Check if the item is in the room or in the player's inventory
@@ -477,7 +460,7 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 		if (!CanPlayerSee(*room))
 		{
 			output << "Esta demasiado oscuro para encontrar lo que intentas abrir.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		item = room->FindItem(target);
@@ -486,19 +469,19 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 	if (item == nullptr)
 	{
 		output << "No encuentras lo que intentas abrir.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!item->IsContainer())
 	{
 		output << item->GetName() << " no se puede abrir.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (item->IsOpen())
 	{
 		output << item->GetName() << " ya esta abierto.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (item->IsLocked())
@@ -506,7 +489,7 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 		if (item->GetId() != "caja_fuerte")
 		{
 			output << "No sabes como abrir " << item->GetName() << ".\n";
-			return;
+			return GameResult::Running;
 		}
 
 		const std::string requiredKeyId = "llave";
@@ -515,22 +498,22 @@ void GameWorld::OpenItem(const std::string& target, const std::string& toolTarge
 		if (key == nullptr || key->GetId() != requiredKeyId)
 		{
 			output << "Necesitas la llave adecuada para abrir " << item->GetName() << ".\n";
-			return;
+			return GameResult::Running;
 		}
 	}
 
 	item->SetContainerState(ContainerState::Open);
 	output << "Abres " << item->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::Unlock(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::Unlock(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	if (currentRoom == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	const bool targetsBackCell = target == "celda" || target == "puerta de la celda";
@@ -539,7 +522,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 	if (!targetsBackCell && !targetsCrypt)
 	{
 		output << "No encuentras ninguna cerradura que puedas abrir.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// ------------- The user is trying to unlock "Celda trasera" -----------------
@@ -549,21 +532,20 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 		if (currentRoom->GetId() != "oficina_sheriff")
 		{
 			output << "No encuentras la puerta de la celda aqui.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		Room* backCell = FindRoomById("celda_trasera");
 		if (backCell == nullptr)
 		{
 			std::cerr << "The \"Celda trasera\" room must always exist in the world.\n";
-			isRunning = false;
-			return;
+			return GameResult::FatalError;
 		}
 
 		if (!backCell->IsLocked())
 		{
 			output << "La puerta de la celda ya esta abierta.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		// If we get here it means we are in "Oficina del Sheriff" and "Celda trasera" it's locked
@@ -573,12 +555,12 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 		if (smallKey == nullptr || smallKey->GetId() != requiredToolId)
 		{
 			output << "Necesitas la llave adecuada para abrir la puerta de la celda.\n";
-			return;
+			return GameResult::Running;
 		}
 
 		backCell->SetLocked(false);
 		output << "Abres la puerta de la celda con la Llave pequena.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// ------------- The user is trying to unlock "Cripta al norte de la iglesia" -----------------
@@ -586,21 +568,20 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 	if (currentRoom->GetId() != "iglesia_vieja")
 	{
 		output << "No encuentras la cerradura de la cripta aqui.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	Room* crypt = FindRoomById("cripta");
 	if (crypt == nullptr)
 	{
 		std::cerr << "The \"Cripta al norte de la iglesia\" room must always exist in the world.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!crypt->IsLocked())
 	{
 		output << "La cerradura de la cripta ya esta abierta.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// If we get here it means we are in "Iglesia vieja" and "Cripta al norte de la iglesia" it's locked
@@ -610,20 +591,20 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 	if (silverCross == nullptr || silverCross->GetId() != requiredToolId)
 	{
 		output << "La cerradura tiene forma de cruz. Necesitas algo que encaje en ella.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	crypt->SetLocked(false);
 	output << "Colocas la Cruz de plata en la cerradura. El acceso a la cripta queda abierto.\n";
+	return GameResult::Running;
 }
 
-void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostream& output)
+GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output)
 {
 	if (GetCurrentRoom() == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// To turn on a light source item, it must be in player's inventory
@@ -631,26 +612,26 @@ void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostr
 	if (item == nullptr)
 	{
 		output << "Debes tener el objeto para poder encenderlo.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!item->IsLightSource())
 	{
 		output << item->GetName() << " no se puede encender.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (item->IsTurnedOn())
 	{
 		output << item->GetName() << " ya esta encendido.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// The item used to turn on the light source item must also be in player's inventory
 	if (m_player.FindItemById("cerillas") == nullptr)
 	{
 		output << "Necesitas algo con lo que encender " << item->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	item->SetLightState(LightState::On);
@@ -660,17 +641,18 @@ void GameWorld::TurnOnItem(const std::string& target, bool& isRunning, std::ostr
 	const Room* room = GetCurrentRoom();
 	if (room != nullptr && room->IsDark())
 	{
-		Look(output, isRunning);
+		return Look(output);
 	}
+
+	return GameResult::Running;
 }
 
-void GameWorld::LoadItem(const std::string& target, const std::string& ammunitionTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output)
 {
 	if (GetCurrentRoom() == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	// To charge the item "pistola", it must be in player's inventory
@@ -678,19 +660,19 @@ void GameWorld::LoadItem(const std::string& target, const std::string& ammunitio
 	if (item == nullptr)
 	{
 		output << "Debes tener el objeto para poder cargarlo.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!item->IsWeapon())
 	{
 		output << item->GetName() << " no se puede cargar.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (item->IsLoaded())
 	{
 		output << item->GetName() << " ya esta cargado.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	// The item "Municion" must also be in player's inventory
@@ -702,48 +684,47 @@ void GameWorld::LoadItem(const std::string& target, const std::string& ammunitio
 	if (ammunition == nullptr || ammunition->GetId() != ammunitionId)
 	{
 		output << "Necesitas la municion adecuada para cargar " << item->GetName() << ".\n";
-		return;
+		return GameResult::Running;
 	}
 
 	m_player.RemoveItemFromInventory(ammunition->GetId());
 	item->SetLoadState(LoadState::Loaded);
 	output << "Cargas " << item->GetName() << ".\n";
+	return GameResult::Running;
 }
 
-void GameWorld::BreakObstacle(const std::string& target, const std::string& toolTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	if (currentRoom == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (target != "cadenas" && target != "cadena")
 	{
 		output << "No sabes como romper eso.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (currentRoom->GetId() != "calle_principal")
 	{
 		output << "No encuentras esas cadenas aqui.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	Room* oldChurch = FindRoomById("iglesia_vieja");
 	if (oldChurch == nullptr)
 	{
 		std::cerr << "The old church must always exist in the world.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (!oldChurch->IsLocked())
 	{
 		output << "Las cadenas ya estan rotas.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	const std::string requiredToolId = "cizalla";
@@ -752,39 +733,39 @@ void GameWorld::BreakObstacle(const std::string& target, const std::string& tool
 	if (boltCutter == nullptr || boltCutter->GetId() != requiredToolId)
 	{
 		output << "Las cadenas son demasiado gruesas para romperlas con las manos.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	oldChurch->SetLocked(false);
 	output << "Cortas las cadenas con la Cizalla oxidada. La entrada a la iglesia queda libre.\n";
+	return GameResult::Running;
 }
 
-void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget, bool& isRunning, std::ostream& output)
+GameResult GameWorld::Shoot(const std::string& target, const std::string& weaponTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	if (currentRoom == nullptr)
 	{
 		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
-		isRunning = false;
-		return;
+		return GameResult::FatalError;
 	}
 
 	if (target != "sheriff")
 	{
 		output << "No sabes a que intentas disparar.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!CanPlayerSee(*currentRoom))
 	{
 		output << "No ves nada.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (currentRoom->GetId() != "cripta")
 	{
 		output << "El sheriff no esta aqui.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	const std::string requiredWeaponId = "revolver";
@@ -793,24 +774,21 @@ void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget
 	if (weapon == nullptr || weapon->GetId() != requiredWeaponId)
 	{
 		output << "Necesitas el Revolver para disparar al sheriff.\n";
-		return;
+		return GameResult::Running;
 	}
 
 	if (!weapon->IsLoaded())
 	{
 		output << "Aprietas el gatillo, pero el Revolver esta descargado. El Sheriff te dispara y luego remata la tarea con Elias\n";
-		output << "Has perdido.\n";
-		isRunning = false;
-		return;
+		return GameResult::Defeat;
 	}
 
 	weapon->SetLoadState(LoadState::Unloaded);
 	output << "Disparas al sheriff antes de que pueda reaccionar. Elias queda libre.\n";
-	output << "Has ganado.\n";
-	isRunning = false;
+	return GameResult::Victory;
 }
 
-void GameWorld::ShowHelp(std::ostream& output) const
+GameResult GameWorld::ShowHelp(std::ostream& output) const
 {
 	output << "Comandos disponibles:\n";
 	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o, entrar, salir\n";
@@ -820,6 +798,7 @@ void GameWorld::ShowHelp(std::ostream& output) const
 	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto]\n";
 	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";
 	output << "- Sistema: ayuda, terminar\n";
+	return GameResult::Running;
 }
 
 Room* GameWorld::GetCurrentRoom()

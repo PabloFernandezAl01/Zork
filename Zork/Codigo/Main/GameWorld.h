@@ -48,6 +48,11 @@ private:
 
 	Item* FindItemById(const std::string& itemId);
 	const Item* FindItemById(const std::string& itemId) const;
+	Item* FindAccessibleItem(const std::string& target);
+	const Item* FindAccessibleItem(const std::string& target) const;
+	static bool TargetsCellDoor(const std::string& target);
+	static bool TargetsCryptLock(const std::string& target);
+	static bool TargetsChurchChains(const std::string& target);
 
 	Room* GetCurrentRoom();
 	const Room* GetCurrentRoom() const;
@@ -61,6 +66,7 @@ private:
 	*/
 	GameResult MovePlayer(Direction direction, std::ostream& output);
 	GameResult Examine(const std::string& target, std::ostream& output) const;
+	GameResult ReadItem(const Item& item, const Room& room, std::ostream& output) const;
 	GameResult ShowInventory(std::ostream& output) const;
 	GameResult TakeItem(const std::string& target, std::ostream& output);
 	GameResult DropItem(const std::string& target, std::ostream& output);
@@ -72,7 +78,7 @@ private:
 	GameResult TurnOnItem(const std::string& target, std::ostream& output);
 	GameResult LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output);
 	GameResult BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output);
-	GameResult Shoot(const std::string& target, const std::string& weaponTarget, std::ostream& output);
+	GameResult ShootTarget(const std::string& target, const std::string& weaponTarget, std::ostream& output);
 	GameResult ShowHelp(std::ostream& output) const;
 
 	/*

@@ -36,6 +36,9 @@
     <ClInclude Include="..\..\Codigo\Main\Parser.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Codigo\Main\WorldIds.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp">

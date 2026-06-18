@@ -62,6 +62,11 @@ const Item* Player::FindItemById(const std::string& itemId) const
 	return it != m_inventory.end() ? it->get() : nullptr;
 }
 
+bool Player::HasItemById(const std::string& itemId) const
+{
+	return FindItemById(itemId) != nullptr;
+}
+
 void Player::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);

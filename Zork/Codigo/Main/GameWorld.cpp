@@ -1,11 +1,27 @@
 #include "GameWorld.h"
 #include "Parser.h"
+#include "WorldIds.h"
 
 #include <algorithm>
 #include <iostream>
 
+bool GameWorld::TargetsCellDoor(const std::string& target)
+{
+	return target == WorldTargets::Cell || target == WorldTargets::CellDoor;
+}
+
+bool GameWorld::TargetsCryptLock(const std::string& target)
+{
+	return target == WorldTargets::Lock || target == WorldTargets::CryptLock;
+}
+
+bool GameWorld::TargetsChurchChains(const std::string& target)
+{
+	return target == WorldTargets::Chains || target == WorldTargets::Chain;
+}
+
 GameWorld::GameWorld()
-	: m_player("player", "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
+	: m_player(PlayerIds::Player, "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
 {
 	InitializeWorld();
 }
@@ -39,7 +55,7 @@ GameResult GameWorld::ExecuteCommand(const Command& command, std::ostream& outpu
 	case CommandType::Break:
 		return BreakObstacle(command.firstTarget, command.secondTarget, output);
 	case CommandType::Shoot:
-		return Shoot(command.firstTarget, command.secondTarget, output);
+		return ShootTarget(command.firstTarget, command.secondTarget, output);
 	case CommandType::Help:
 		return ShowHelp(output);
 	case CommandType::Quit:
@@ -81,6 +97,40 @@ const Item* GameWorld::FindItemById(const std::string& itemId) const
 {
 	const auto it = m_items.find(itemId);
 	return it != m_items.end() ? it->second.get() : nullptr;
+}
+
+Item* GameWorld::FindAccessibleItem(const std::string& target)
+{
+	Item* item = m_player.FindItem(target);
+	if (item != nullptr)
+	{
+		return item;
+	}
+
+	Room* room = GetCurrentRoom();
+	if (room == nullptr || !CanPlayerSee(*room))
+	{
+		return nullptr;
+	}
+
+	return room->FindItem(target);
+}
+
+const Item* GameWorld::FindAccessibleItem(const std::string& target) const
+{
+	const Item* item = m_player.FindItem(target);
+	if (item != nullptr)
+	{
+		return item;
+	}
+
+	const Room* room = GetCurrentRoom();
+	if (room == nullptr || !CanPlayerSee(*room))
+	{
+		return nullptr;
+	}
+
+	return room->FindItem(target);
 }
 
 void GameWorld::AddRoom(const std::shared_ptr<Room>& room)
@@ -160,7 +210,7 @@ GameResult GameWorld::Examine(const std::string& target, std::ostream& output) c
 
 	// Inventory items can generally be examined by touch even in a dark room.
 	// Objects whose information must be read still require light.
-	const Item* item = m_player.FindItem(target);
+	const Item* item = FindAccessibleItem(target);
 	if (item == nullptr)
 	{
 		if (!CanPlayerSee(*room))
@@ -175,27 +225,26 @@ GameResult GameWorld::Examine(const std::string& target, std::ostream& output) c
 			return GameResult::Running;
 		}
 
-		// In WestZork every item is unique, so after checking the inventory the
-		// target can only be directly present in the current room or unavailable.
-		item = room->FindItem(target);
-		if (item == nullptr)
-		{
-			output << "No encuentras lo que intentas examinar.\n";
-			return GameResult::Running;
-		}
-	}
-
-	if (!CanPlayerSee(*room) && item->RequiresLightToExamine())
-	{
-		output << "Esta demasiado oscuro para leer " << item->GetName() << ".\n";
+		output << "No encuentras lo que intentas examinar.\n";
 		return GameResult::Running;
 	}
 
-	// If the item was found, show it's information (name, descripction and items inside, if any)
-	item->PrintInformation(output);
-	if (item->GetId() == "mapa_rasgado")
+	return ReadItem(*item, *room, output);
+}
+
+GameResult GameWorld::ReadItem(const Item& item, const Room& room, std::ostream& output) const
+{
+	if (!CanPlayerSee(room) && item.RequiresLightToExamine())
 	{
-		room->PrintExists(output);
+		output << "Esta demasiado oscuro para leer " << item.GetName() << ".\n";
+		return GameResult::Running;
+	}
+
+	// Present the item's readable information and any item-specific context.
+	item.PrintInformation(output);
+	if (item.GetId() == ItemIds::TornMap)
+	{
+		room.PrintExists(output);
 	}
 
 	return GameResult::Running;
@@ -298,16 +347,11 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 	}
 
 	// Try to find the item container (could be in player inventory or in current room)
-	Item* containerItem = m_player.FindItem(containerTarget);
-	if (containerItem == nullptr)
+	Item* containerItem = FindAccessibleItem(containerTarget);
+	if (containerItem == nullptr && !CanPlayerSee(*room))
 	{
-		if (!CanPlayerSee(*room))
-		{
-			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
-			return GameResult::Running;
-		}
-
-		containerItem = room->FindItem(containerTarget);
+		output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+		return GameResult::Running;
 	}
 
 	// Didn't find it
@@ -376,16 +420,11 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 	}
 
 	// Try to find the container item (could be in player inventory or in current room)
-	Item* container = m_player.FindItem(containerTarget);
-	if (container == nullptr)
+	Item* container = FindAccessibleItem(containerTarget);
+	if (container == nullptr && !CanPlayerSee(*room))
 	{
-		if (!CanPlayerSee(*room))
-		{
-			output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
-			return GameResult::Running;
-		}
-
-		container = room->FindItem(containerTarget);
+		output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+		return GameResult::Running;
 	}
 
 	if (container == nullptr)
@@ -428,13 +467,7 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 
 GameResult GameWorld::Open(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
-	const bool targetsRoomLock =
-		target == "celda" ||
-		target == "puerta de la celda" ||
-		target == "cerradura" ||
-		target == "cerradura de la cripta";
-
-	if (targetsRoomLock)
+	if (TargetsCellDoor(target) || TargetsCryptLock(target))
 	{
 		// This handles commands to unlock items or rooms
 		return Unlock(target, toolTarget, output);
@@ -453,16 +486,11 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 	}
 
 	// Check if the item is in the room or in the player's inventory
-	Item* item = m_player.FindItem(target);
-	if (item == nullptr)
+	Item* item = FindAccessibleItem(target);
+	if (item == nullptr && !CanPlayerSee(*room))
 	{
-		if (!CanPlayerSee(*room))
-		{
-			output << "Esta demasiado oscuro para encontrar lo que intentas abrir.\n";
-			return GameResult::Running;
-		}
-
-		item = room->FindItem(target);
+		output << "Esta demasiado oscuro para encontrar lo que intentas abrir.\n";
+		return GameResult::Running;
 	}
 
 	if (item == nullptr)
@@ -485,16 +513,15 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 
 	if (item->IsLocked())
 	{
-		if (item->GetId() != "caja_fuerte")
+		if (item->GetId() != ItemIds::SafeBox)
 		{
 			output << "No sabes como abrir " << item->GetName() << ".\n";
 			return GameResult::Running;
 		}
 
-		const std::string requiredKeyId = "llave";
-		const Item* key = toolTarget.empty() ? m_player.FindItemById(requiredKeyId) : m_player.FindItem(toolTarget);
+		const Item* key = toolTarget.empty() ? m_player.FindItemById(ItemIds::SmallKey) : m_player.FindItem(toolTarget);
 
-		if (key == nullptr || key->GetId() != requiredKeyId)
+		if (key == nullptr || key->GetId() != ItemIds::SmallKey)
 		{
 			output << "Necesitas la llave adecuada para abrir " << item->GetName() << ".\n";
 			return GameResult::Running;
@@ -515,8 +542,8 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		return GameResult::FatalError;
 	}
 
-	const bool targetsBackCell = target == "celda" || target == "puerta de la celda";
-	const bool targetsCrypt = target == "cerradura" || target == "cerradura de la cripta";
+	const bool targetsBackCell = TargetsCellDoor(target);
+	const bool targetsCrypt = TargetsCryptLock(target);
 
 	if (!targetsBackCell && !targetsCrypt)
 	{
@@ -528,7 +555,7 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 
 	if (targetsBackCell)
 	{
-		if (currentRoom->GetId() != "oficina_sheriff")
+		if (currentRoom->GetId() != RoomIds::SheriffOffice)
 		{
 			output << "No encuentras la puerta de la celda aqui.\n";
 			return GameResult::Running;
@@ -548,10 +575,9 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		}
 
 		// If we get here it means we are in "Oficina del Sheriff" and "Celda trasera" it's locked
-		const std::string requiredToolId = "llave";
-		const Item* smallKey = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
+		const Item* smallKey = toolTarget.empty() ? m_player.FindItemById(ItemIds::SmallKey) : m_player.FindItem(toolTarget);
 
-		if (smallKey == nullptr || smallKey->GetId() != requiredToolId)
+		if (smallKey == nullptr || smallKey->GetId() != ItemIds::SmallKey)
 		{
 			output << "Necesitas la llave adecuada para abrir la puerta de la celda.\n";
 			return GameResult::Running;
@@ -564,7 +590,7 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 
 	// ------------- The user is trying to unlock "Cripta al norte de la iglesia" -----------------
 
-	if (currentRoom->GetId() != "iglesia_vieja")
+	if (currentRoom->GetId() != RoomIds::OldChurch)
 	{
 		output << "No encuentras la cerradura de la cripta aqui.\n";
 		return GameResult::Running;
@@ -584,10 +610,9 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 	}
 
 	// If we get here it means we are in "Iglesia vieja" and "Cripta al norte de la iglesia" it's locked
-	const std::string requiredToolId = "cruz_plata";
-	const Item* silverCross = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
+	const Item* silverCross = toolTarget.empty() ? m_player.FindItemById(ItemIds::SilverCross) : m_player.FindItem(toolTarget);
 
-	if (silverCross == nullptr || silverCross->GetId() != requiredToolId)
+	if (silverCross == nullptr || silverCross->GetId() != ItemIds::SilverCross)
 	{
 		output << "La cerradura tiene forma de cruz. Necesitas algo que encaje en ella.\n";
 		return GameResult::Running;
@@ -627,7 +652,7 @@ GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output
 	}
 
 	// The item used to turn on the light source item must also be in player's inventory
-	if (m_player.FindItemById("cerillas") == nullptr)
+	if (!m_player.HasItemById(ItemIds::Matches))
 	{
 		output << "Necesitas algo con lo que encender " << item->GetName() << ".\n";
 		return GameResult::Running;
@@ -675,12 +700,10 @@ GameResult GameWorld::LoadItem(const std::string& target, const std::string& amm
 	}
 
 	// The item "Municion" must also be in player's inventory
-	const std::string ammunitionId = "municion";
-
 	// This is just to allow the command to not mention "municion" so the input could be "Cargar revolver" and also "Cargar revolver con municion"
-	const Item* ammunition = ammunitionTarget.empty() ? m_player.FindItemById(ammunitionId) : m_player.FindItem(ammunitionTarget);
+	const Item* ammunition = ammunitionTarget.empty() ? m_player.FindItemById(ItemIds::Ammunition) : m_player.FindItem(ammunitionTarget);
 
-	if (ammunition == nullptr || ammunition->GetId() != ammunitionId)
+	if (ammunition == nullptr || ammunition->GetId() != ItemIds::Ammunition)
 	{
 		output << "Necesitas la municion adecuada para cargar " << item->GetName() << ".\n";
 		return GameResult::Running;
@@ -701,13 +724,13 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 		return GameResult::FatalError;
 	}
 
-	if (target != "cadenas" && target != "cadena")
+	if (!TargetsChurchChains(target))
 	{
 		output << "No sabes como romper eso.\n";
 		return GameResult::Running;
 	}
 
-	if (currentRoom->GetId() != "calle_principal")
+	if (currentRoom->GetId() != RoomIds::MainStreet)
 	{
 		output << "No encuentras esas cadenas aqui.\n";
 		return GameResult::Running;
@@ -726,10 +749,9 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 		return GameResult::Running;
 	}
 
-	const std::string requiredToolId = "cizalla";
-	const Item* boltCutter = toolTarget.empty() ? m_player.FindItemById(requiredToolId) : m_player.FindItem(toolTarget);
+	const Item* boltCutter = toolTarget.empty() ? m_player.FindItemById(ItemIds::BoltCutter) : m_player.FindItem(toolTarget);
 
-	if (boltCutter == nullptr || boltCutter->GetId() != requiredToolId)
+	if (boltCutter == nullptr || boltCutter->GetId() != ItemIds::BoltCutter)
 	{
 		output << "Las cadenas son demasiado gruesas para romperlas con las manos.\n";
 		return GameResult::Running;
@@ -740,7 +762,7 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 	return GameResult::Running;
 }
 
-GameResult GameWorld::Shoot(const std::string& target, const std::string& weaponTarget, std::ostream& output)
+GameResult GameWorld::ShootTarget(const std::string& target, const std::string& weaponTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	if (currentRoom == nullptr)
@@ -749,7 +771,7 @@ GameResult GameWorld::Shoot(const std::string& target, const std::string& weapon
 		return GameResult::FatalError;
 	}
 
-	if (target != "sheriff")
+	if (target != WorldTargets::Sheriff)
 	{
 		output << "No sabes a que intentas disparar.\n";
 		return GameResult::Running;
@@ -761,16 +783,15 @@ GameResult GameWorld::Shoot(const std::string& target, const std::string& weapon
 		return GameResult::Running;
 	}
 
-	if (currentRoom->GetId() != "cripta")
+	if (currentRoom->GetId() != RoomIds::Crypt)
 	{
 		output << "El sheriff no esta aqui.\n";
 		return GameResult::Running;
 	}
 
-	const std::string requiredWeaponId = "revolver";
-	Item* weapon = weaponTarget.empty() ? m_player.FindItemById(requiredWeaponId) : m_player.FindItem(weaponTarget);
+	Item* weapon = weaponTarget.empty() ? m_player.FindItemById(ItemIds::Revolver) : m_player.FindItem(weaponTarget);
 
-	if (weapon == nullptr || weapon->GetId() != requiredWeaponId)
+	if (weapon == nullptr || weapon->GetId() != ItemIds::Revolver)
 	{
 		output << "Necesitas el Revolver para disparar al sheriff.\n";
 		return GameResult::Running;
@@ -836,42 +857,42 @@ void GameWorld::InitializeWorld()
 	*/
 
 	std::shared_ptr<Room> townEntrance = std::make_shared<Room>(
-		"entrada_pueblo",
+		RoomIds::TownEntrance,
 		"Entrada al pueblo",
 		"El viejo arco de madera marca la entrada a West Zork. El polvo cubre el camino y el silencio pesa demasiado.");
 
 	std::shared_ptr<Room> abandonedStable = std::make_shared<Room>(
-		"establo_abandonado",
+		RoomIds::AbandonedStable,
 		"Establo abandonado",
 		"Un establo medio hundido. Huele a heno podrido, madera humeda y algo que lleva anos sin moverse.");
 
 	std::shared_ptr<Room> mainStreet = std::make_shared<Room>(
-		"calle_principal",
+		RoomIds::MainStreet,
 		"Calle Principal",
 		"La calle cruza el pueblo de lado a lado. Las fachadas vacias parecen observar cada paso.");
 
 	std::shared_ptr<Room> saloon = std::make_shared<Room>(
-		"saloon",
+		RoomIds::Saloon,
 		"Saloon",
 		"Las puertas del saloon crujen con el viento. Botellas rotas y mesas volcadas cuentan una mala noche.");
 
 	std::shared_ptr<Room> sheriffOffice = std::make_shared<Room>(
-		"oficina_sheriff",
+		RoomIds::SheriffOffice,
 		"Oficina del Sheriff",
 		"Una oficina pequena, con barrotes oxidados al fondo y papeles amarillentos sobre el escritorio.");
 
 	std::shared_ptr<Room> backCell = std::make_shared<Room>(
-		"celda_trasera",
+		RoomIds::BackCell,
 		"Celda trasera",
 		"Una celda oscura y estrecha. La humedad se pega a la piel y cuesta distinguir el suelo.");
 
 	std::shared_ptr<Room> oldChurch = std::make_shared<Room>(
-		"iglesia_vieja",
+		RoomIds::OldChurch,
 		"Iglesia vieja",
 		"El campanario esta torcido y la puerta principal conserva marcas profundas de cadenas.");
 
 	std::shared_ptr<Room> crypt = std::make_shared<Room>(
-		"cripta",
+		RoomIds::Crypt,
 		"Cripta al norte de la iglesia",
 		"Un pasadizo de piedra conduce a una cripta olvidada. En la oscuridad, algo espera.");
 
@@ -889,27 +910,27 @@ void GameWorld::InitializeWorld()
 	*    // --------------------------------------------------------------------- \\
 	*/
 
-	townEntrance->AddExit(Direction::East, "establo_abandonado");
-	townEntrance->AddExit(Direction::North, "calle_principal");
+	townEntrance->AddExit(Direction::East, RoomIds::AbandonedStable);
+	townEntrance->AddExit(Direction::North, RoomIds::MainStreet);
 
-	abandonedStable->AddExit(Direction::West, "entrada_pueblo");
+	abandonedStable->AddExit(Direction::West, RoomIds::TownEntrance);
 
-	mainStreet->AddExit(Direction::South, "entrada_pueblo");
-	mainStreet->AddExit(Direction::West, "saloon");
-	mainStreet->AddExit(Direction::East, "oficina_sheriff");
-	mainStreet->AddExit(Direction::North, "iglesia_vieja", true);
+	mainStreet->AddExit(Direction::South, RoomIds::TownEntrance);
+	mainStreet->AddExit(Direction::West, RoomIds::Saloon);
+	mainStreet->AddExit(Direction::East, RoomIds::SheriffOffice);
+	mainStreet->AddExit(Direction::North, RoomIds::OldChurch, true);
 
-	saloon->AddExit(Direction::East, "calle_principal");
+	saloon->AddExit(Direction::East, RoomIds::MainStreet);
 
-	sheriffOffice->AddExit(Direction::West, "calle_principal");
-	sheriffOffice->AddExit(Direction::East, "celda_trasera", true);
+	sheriffOffice->AddExit(Direction::West, RoomIds::MainStreet);
+	sheriffOffice->AddExit(Direction::East, RoomIds::BackCell, true);
 
-	backCell->AddExit(Direction::West, "oficina_sheriff");
+	backCell->AddExit(Direction::West, RoomIds::SheriffOffice);
 
-	oldChurch->AddExit(Direction::South, "calle_principal");
-	oldChurch->AddExit(Direction::North, "cripta", true);
+	oldChurch->AddExit(Direction::South, RoomIds::MainStreet);
+	oldChurch->AddExit(Direction::North, RoomIds::Crypt, true);
 
-	crypt->AddExit(Direction::South, "iglesia_vieja");
+	crypt->AddExit(Direction::South, RoomIds::OldChurch);
 
 	/*
 	*                      SPECIFIC ROOMS CONFIGURATION
@@ -925,21 +946,21 @@ void GameWorld::InitializeWorld()
 	*/
 
 	std::shared_ptr<Item> whiskyBottle = std::make_shared<Item>(
-		"botella_whisky",
+		ItemIds::WhiskyBottle,
 		"Botella de whisky vacia",
 		"Una botella vacia con una etiqueta casi borrada.");
 	whiskyBottle->AddAlias("botella");
 	whiskyBottle->AddAlias("whisky");
 
 	std::shared_ptr<Item> tornMap = std::make_shared<Item>(
-		"mapa_rasgado",
+		ItemIds::TornMap,
 		"Mapa rasgado",
 		"Un mapa incompleto del pueblo. Aun se distinguen la iglesia, el saloon y la oficina del sheriff.");
 	tornMap->AddAlias("mapa");
 	tornMap->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> lantern = std::make_shared<Item>(
-		"farol",
+		ItemIds::Lantern,
 		"Farol",
 		"Un farol viejo que aun conserva algo de combustible.");
 	lantern->AddAlias("farol");
@@ -947,19 +968,19 @@ void GameWorld::InitializeWorld()
 	lantern->SetLightState(LightState::Off);
 
 	std::shared_ptr<Item> matches = std::make_shared<Item>(
-		"cerillas",
+		ItemIds::Matches,
 		"Cerillas",
 		"Una pequena caja de cerillas humedecida por fuera.");
 	matches->AddAlias("cerilla");
 
 	std::shared_ptr<Item> boltCutter = std::make_shared<Item>(
-		"cizalla",
+		ItemIds::BoltCutter,
 		"Cizalla oxidada",
 		"Una cizalla pesada con las hojas comidas por el oxido.");
 	boltCutter->AddAlias("cizalla");
 
 	std::shared_ptr<Item> potatoSack = std::make_shared<Item>(
-		"saco_patatas",
+		ItemIds::PotatoSack,
 		"Saco de patatas podridas",
 		"Un saco de arpillera lleno de patatas podridas. El olor resulta insoportable.");
 	potatoSack->AddAlias("saco");
@@ -969,14 +990,14 @@ void GameWorld::InitializeWorld()
 	potatoSack->SetContainerState(ContainerState::Closed);
 
 	std::shared_ptr<Item> smallKey = std::make_shared<Item>(
-		"llave",
+		ItemIds::SmallKey,
 		"Llave pequena",
 		"Una llave pequena de hierro ennegrecido.");
 	smallKey->AddAlias("llave");
 	smallKey->AddAlias("llave pequena");
 
 	std::shared_ptr<Item> bartenderNote = std::make_shared<Item>(
-		"nota_tabernero",
+		ItemIds::BartenderNote,
 		"Nota del tabernero",
 		"Una nota escrita con pulso tembloroso por el antiguo tabernero.");
 	bartenderNote->AddAlias("nota");
@@ -984,7 +1005,7 @@ void GameWorld::InitializeWorld()
 	bartenderNote->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
-		"caja_fuerte",
+		ItemIds::SafeBox,
 		"Caja fuerte",
 		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
 	safeBox->AddAlias("caja");
@@ -994,7 +1015,7 @@ void GameWorld::InitializeWorld()
 	safeBox->SetContainerState(ContainerState::Locked);
 
 	std::shared_ptr<Item> revolver = std::make_shared<Item>(
-		"revolver",
+		ItemIds::Revolver,
 		"Revolver",
 		"Un revolver frio al tacto, con el tambor listo para recibir municion.");
 	revolver->AddAlias("revolver");
@@ -1002,26 +1023,26 @@ void GameWorld::InitializeWorld()
 	revolver->SetLoadState(LoadState::Unloaded);
 
 	std::shared_ptr<Item> ammunition = std::make_shared<Item>(
-		"municion",
+		ItemIds::Ammunition,
 		"Municion",
 		"Unas pocas balas envueltas en papel aceitado.");
 	ammunition->AddAlias("balas");
 
 	std::shared_ptr<Item> sheriffDiary = std::make_shared<Item>(
-		"diario_sheriff",
+		ItemIds::SheriffDiary,
 		"Diario del sheriff",
 		"Un diario manchado con entradas cada vez mas desesperadas.");
 	sheriffDiary->AddAlias("diario");
 	sheriffDiary->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> silverCross = std::make_shared<Item>(
-		"cruz_plata",
+		ItemIds::SilverCross,
 		"Cruz de plata",
 		"Una cruz de plata pequena, demasiado limpia para este lugar.");
 	silverCross->AddAlias("cruz");
 
 	std::shared_ptr<Item> eliasHat = std::make_shared<Item>(
-		"sombrero_elias",
+		ItemIds::EliasHat,
 		"Sombrero de Elias",
 		"El sombrero de tu hermano. Reconocerias esa cinta azul en cualquier parte.");
 	eliasHat->AddAlias("sombrero");
@@ -1055,5 +1076,5 @@ void GameWorld::InitializeWorld()
 	AddItem(silverCross);
 	AddItem(eliasHat);
 
-	m_player.SetCurrentRoomId("entrada_pueblo");
+	m_player.SetCurrentRoomId(RoomIds::TownEntrance);
 }

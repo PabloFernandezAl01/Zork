@@ -4,15 +4,6 @@
 #include <algorithm>
 #include <iostream>
 
-bool GameWorld::IsAValidItem(const std::string& target) const
-{
-	return std::find_if(m_items.begin(), m_items.end(),
-		[&target](const std::pair<const std::string, std::shared_ptr<Item>>& itemEntry)
-		{
-			return itemEntry.second->MatchesTarget(target);
-		}) != m_items.end();
-}
-
 GameWorld::GameWorld()
 	: m_player("player", "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
 {
@@ -59,9 +50,6 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 	case CommandType::Break:
 		BreakObstacle(command.firstTarget, command.secondTarget, isRunning, output);
 		break;
-	case CommandType::Read:
-		// TODO
-		break;
 	case CommandType::Shoot:
 		// TODO
 		break;
@@ -75,6 +63,15 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 		output << "No he entendido eso.\n";
 		break;
 	}
+}
+
+bool GameWorld::IsAValidItem(const std::string& target) const
+{
+	return std::find_if(m_items.begin(), m_items.end(),
+		[&target](const std::pair<const std::string, std::shared_ptr<Item>>& itemEntry)
+		{
+			return itemEntry.second->MatchesTarget(target);
+		}) != m_items.end();
 }
 
 Room* GameWorld::FindRoomById(const std::string& roomId)
@@ -744,7 +741,7 @@ void GameWorld::ShowHelp(std::ostream& output) const
 	output << "- Observacion: mirar/m, examinar/x [objeto]\n";
 	output << "- Inventario: inventario/i, coger [objeto], soltar [objeto]\n";
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
-	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto], leer [objeto]\n";
+	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto]\n";
 	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";
 	output << "- Sistema: ayuda, terminar\n";
 }

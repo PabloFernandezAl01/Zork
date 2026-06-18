@@ -21,7 +21,6 @@ enum class CommandType
 	TurnOn,
 	Load,
 	Break,
-	Read,
 	Shoot,
 	Help,
 	Quit,

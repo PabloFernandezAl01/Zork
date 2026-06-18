@@ -140,14 +140,6 @@ Command Parser::Parse(const std::string& input) const
 		}
 	}
 
-	if (verb == "leer")
-	{
-		if (TryParseSingleTargetCommand(tokens, CommandType::Read, command))
-		{
-			return command;
-		}
-	}
-
 	if (verb == "disparar")
 	{
 		if (TryParseTwoTargetCommand(tokens, "con", CommandType::Shoot, command) ||

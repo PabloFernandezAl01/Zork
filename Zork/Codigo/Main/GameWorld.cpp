@@ -47,6 +47,24 @@ void GameWorld::ExecuteCommand(const Command& command, bool& isRunning, std::ost
 	case CommandType::Remove:
 		TakeItemFromContainer(command.firstTarget, isRunning, command.secondTarget, output);
 		break;
+	case CommandType::Open:
+		// TODO
+		break;
+	case CommandType::TurnOn:
+		// TODO
+		break;
+	case CommandType::Load:
+		// TODO
+		break;
+	case CommandType::Break:
+		// TODO
+		break;
+	case CommandType::Read:
+		// TODO
+		break;
+	case CommandType::Shoot:
+		// TODO
+		break;
 	case CommandType::Help:
 		ShowHelp(output);
 		break;
@@ -369,6 +387,8 @@ void GameWorld::ShowHelp(std::ostream& output) const
 	output << "- Observacion: mirar/m, examinar/x [objeto]\n";
 	output << "- Inventario: inventario/i, coger [objeto], soltar [objeto]\n";
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
+	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto], leer [objeto]\n";
+	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";
 	output << "- Sistema: ayuda, terminar\n";
 }
 

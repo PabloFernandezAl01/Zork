@@ -2,7 +2,9 @@
 
 #include "Room.h" // <--- To reuse Direction struct
 
+#include <cstddef>
 #include <string>
+#include <vector>
 
 // All type of actions required for WestZork
 enum class CommandType
@@ -15,6 +17,12 @@ enum class CommandType
 	Drop,
 	Put,
 	Remove,
+	Open,
+	TurnOn,
+	Load,
+	Break,
+	Read,
+	Shoot,
 	Help,
 	Quit,
 	Unknown
@@ -75,4 +83,24 @@ private:
 	// Checks whether the whole text is a movement command and writes its Direction.
 	// Examples: "n" -> North, "oeste" -> West, "abajo" -> Down.
 	static bool TryParseDirection(const std::string& text, Direction& direction);
+
+	// Joins a range of tokens into one target sentence.
+	// Examples: ["caja", "fuerte"] -> "caja fuerte".
+	static std::string JoinTokens(const std::vector<std::string>& tokens, std::size_t firstToken, std::size_t lastToken);
+
+	// Removes common Spanish articles/prepositions from the beginning of a target.
+	// Examples: "la caja fuerte" -> "caja fuerte", "a el sheriff" -> "sheriff".
+	static std::string RemoveLeadingArticle(const std::string& target);
+
+	// Builds a clean target sentence from a token range.
+	static std::string BuildTarget(const std::vector<std::string>& tokens, std::size_t firstToken, std::size_t lastToken);
+
+	// Finds the last occurrence of a connector token, such as "en", "de" or "con".
+	static bool TryFindLastToken(const std::vector<std::string>& tokens, const std::string& targetToken, std::size_t& tokenIndex);
+
+	// Parses commands with one target after the verb.
+	static bool TryParseSingleTargetCommand(const std::vector<std::string>& tokens, CommandType type, Command& command);
+
+	// Parses commands with two targets separated by a connector.
+	static bool TryParseTwoTargetCommand(const std::vector<std::string>& tokens, const std::string& connector, CommandType type, Command& command);
 };

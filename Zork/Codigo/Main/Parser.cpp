@@ -205,12 +205,6 @@ bool Parser::TryParseDirection(const std::string& text, Direction& direction)
 		return true;
 	}
 
-	if (text == "abajo")
-	{
-		direction = Direction::Down;
-		return true;
-	}
-
 	if (text == "entrar")
 	{
 		direction = Direction::Enter;

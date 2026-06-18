@@ -80,7 +80,7 @@ private:
 	static std::string Trim(const std::string& text);
 
 	// Checks whether the whole text is a movement command and writes its Direction.
-	// Examples: "n" -> North, "oeste" -> West, "abajo" -> Down.
+	// Examples: "n" -> North, "oeste" -> West, "salir" -> Exit.
 	static bool TryParseDirection(const std::string& text, Direction& direction);
 
 	// Joins a range of tokens into one target sentence.

@@ -16,7 +16,6 @@ enum class Direction
 	South,
 	East,
 	West,
-	Down,
 	Enter,
 	Exit
 };

@@ -179,35 +179,28 @@ void GameWorld::Examine(const std::string& target, bool& isRunning, std::ostream
 	// Inventory items can be examined by touch even in a dark room. Darkness
 	// only prevents the player from discovering and inspecting room contents.
 	const Item* item = m_player.FindItem(target);
-	if (item != nullptr)
-	{
-		item->PrintInformation(output);
-		if (item->GetId() == "mapa_rasgado")
-		{
-			room->PrintExists(output);
-		}
-		return;
-	}
-
-	if (!CanPlayerSee(*room))
-	{
-		output << "Esta demasiado oscuro para examinar nada de la sala.\n";
-		return;
-	}
-
-	if (!IsAValidItem(target))
-	{
-		output << "No se lo que intentas examinar.\n";
-		return;
-	}
-
-	// In WestZork every item is unique, so after checking the inventory the
-	// target can only be directly present in the current room or unavailable.
-	item = room->FindItem(target);
 	if (item == nullptr)
 	{
-		output << "No encuentras lo que intentas examinar.\n";
-		return;
+		if (!CanPlayerSee(*room))
+		{
+			output << "Esta demasiado oscuro para examinar nada de la sala.\n";
+			return;
+		}
+
+		if (!IsAValidItem(target))
+		{
+			output << "No se lo que intentas examinar.\n";
+			return;
+		}
+
+		// In WestZork every item is unique, so after checking the inventory the
+		// target can only be directly present in the current room or unavailable.
+		item = room->FindItem(target);
+		if (item == nullptr)
+		{
+			output << "No encuentras lo que intentas examinar.\n";
+			return;
+		}
 	}
 
 	// If the item was found, show it's information (name, descripction and items inside, if any)
@@ -564,7 +557,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 		return;
 	}
 
-	// ------------- The user is trying to unlock "Cripta bajo la iglesia" -----------------
+	// ------------- The user is trying to unlock "Cripta al norte de la iglesia" -----------------
 
 	if (currentRoom->GetId() != "iglesia_vieja")
 	{
@@ -575,7 +568,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 	Room* crypt = FindRoomById("cripta");
 	if (crypt == nullptr)
 	{
-		std::cerr << "The \"Cripta bajo la iglesia\" room must always exist in the world.\n";
+		std::cerr << "The \"Cripta al norte de la iglesia\" room must always exist in the world.\n";
 		isRunning = false;
 		return;
 	}
@@ -586,7 +579,7 @@ void GameWorld::Unlock(const std::string& target, const std::string& toolTarget,
 		return;
 	}
 
-	// If we get here it means we are in "Iglesia vieja" and "Cripta bajo la iglesia" it's locked
+	// If we get here it means we are in "Iglesia vieja" and "Cripta al norte de la iglesia" it's locked
 	const std::string requiredToolId = "cruz_plata";
 	const Item* silverCross = toolTarget.empty() ? m_player.FindItem(requiredToolId) : m_player.FindItem(toolTarget);
 
@@ -796,7 +789,7 @@ void GameWorld::Shoot(const std::string& target, const std::string& weaponTarget
 void GameWorld::ShowHelp(std::ostream& output) const
 {
 	output << "Comandos disponibles:\n";
-	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o, abajo, entrar, salir\n";
+	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o, entrar, salir\n";
 	output << "- Observacion: mirar/m, examinar/x [objeto]\n";
 	output << "- Inventario: inventario/i, coger [objeto], soltar [objeto]\n";
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
@@ -877,8 +870,8 @@ void GameWorld::InitializeWorld()
 
 	std::shared_ptr<Room> crypt = std::make_shared<Room>(
 		"cripta",
-		"Cripta bajo la iglesia",
-		"Un frio seco sube desde la piedra. En la oscuridad, algo espera.");
+		"Cripta al norte de la iglesia",
+		"Un pasadizo de piedra conduce a una cripta olvidada. En la oscuridad, algo espera.");
 
 	AddRoom(townEntrance);
 	AddRoom(abandonedStable);
@@ -912,9 +905,9 @@ void GameWorld::InitializeWorld()
 	backCell->AddExit(Direction::West, "oficina_sheriff");
 
 	oldChurch->AddExit(Direction::South, "calle_principal");
-	oldChurch->AddExit(Direction::Down, "cripta");
+	oldChurch->AddExit(Direction::North, "cripta");
 
-	crypt->AddExit(Direction::Exit, "iglesia_vieja");
+	crypt->AddExit(Direction::South, "iglesia_vieja");
 
 	/*
 	*                      SPECIFIC ROOMS CONFIGURATION

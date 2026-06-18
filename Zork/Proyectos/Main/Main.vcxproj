@@ -91,6 +91,7 @@
     <ClInclude Include="..\..\Codigo\Main\Player.h" />
     <ClInclude Include="..\..\Codigo\Main\Room.h" />
     <ClInclude Include="..\..\Codigo\Main\WestZork.h" />
+    <ClInclude Include="..\..\Codigo\Main\WorldBuilder.h" />
     <ClInclude Include="..\..\Codigo\Main\WorldIds.h" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +103,7 @@
     <ClCompile Include="..\..\Codigo\Main\Player.cpp" />
     <ClCompile Include="..\..\Codigo\Main\Room.cpp" />
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp" />
+    <ClCompile Include="..\..\Codigo\Main\WorldBuilder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -39,6 +39,9 @@
     <ClInclude Include="..\..\Codigo\Main\WorldIds.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Codigo\Main\WorldBuilder.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp">
@@ -63,6 +66,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Codigo\Main\Parser.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Codigo\Main\WorldBuilder.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

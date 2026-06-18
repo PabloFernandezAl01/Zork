@@ -58,9 +58,6 @@ private:
 	const Room* GetCurrentRoom() const;
 	bool CanPlayerSee(const Room& room) const;
 
-	void AddRoom(const std::shared_ptr<Room>& room);
-	void AddItem(const std::shared_ptr<Item>& item);
-
 	/*
 	*  Commands handling
 	*/
@@ -80,15 +77,6 @@ private:
 	GameResult BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult ShootTarget(const std::string& target, const std::string& weaponTarget, std::ostream& output);
 	GameResult ShowHelp(std::ostream& output) const;
-
-	/*
-	*  WORLD SETUP
-	* - Rooms creation
-	* - Rooms conexions creation
-	* - Items creation
-	* - Items distribution in rooms
-	*/
-	void InitializeWorld(); 
 
 	Player m_player;
 

@@ -26,8 +26,9 @@ Exit::Exit()
 {
 }
 
-Exit::Exit(const std::string& targetRoomId, bool locked)
+Exit::Exit(const std::string& targetRoomId, const std::string& targetRoomName, bool locked)
 	: targetRoomId(targetRoomId)
+	, targetRoomName(targetRoomName)
 	, isLocked(locked)
 {
 }
@@ -111,13 +112,14 @@ void Room::PrintExists(std::ostream& output) const
 	output << "Conexiones disponibles:\n";
 	for (const auto& exit : m_exits)
 	{
-		output << "- " << DirectionUtils::ToText(exit.first) << '\n';
+		output << "- " << exit.second.targetRoomName << " al "
+			<< DirectionUtils::ToText(exit.first) << '\n';
 	}
 }
 
-void Room::AddExit(Direction direction, const std::string& targetRoomId, bool locked)
+void Room::AddExit(Direction direction, const Room& targetRoom, bool locked)
 {
-	m_exits[direction] = Exit(targetRoomId, locked);
+	m_exits[direction] = Exit(targetRoom.GetId(), targetRoom.GetName(), locked);
 }
 
 bool Room::AddItem(const std::shared_ptr<Item>& item)

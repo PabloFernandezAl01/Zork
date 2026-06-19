@@ -27,9 +27,10 @@ struct DirectionUtils
 struct Exit
 {
 	Exit();
-	Exit(const std::string& targetRoomId, bool locked);
+	Exit(const std::string& targetRoomId, const std::string& targetRoomName, bool locked);
 
 	std::string targetRoomId;
+	std::string targetRoomName;
 	bool isLocked;
 };
 
@@ -60,10 +61,10 @@ public:
 	*/
 	void PrintInformation(std::ostream& output) const override;
 
-	// Prints the directions that connect the current room with adjacent rooms.
+	// Prints the names and directions of the rooms connected to the current room.
 	void PrintExists(std::ostream& output) const;
 
-	void AddExit(Direction direction, const std::string& targetRoomId, bool locked = false);
+	void AddExit(Direction direction, const Room& targetRoom, bool locked = false);
 
 	/*
 	* Item addition and removing

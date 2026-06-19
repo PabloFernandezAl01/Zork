@@ -11,7 +11,7 @@
 #include <vector>
 
 GameWorld::GameWorld()
-	: m_player(PlayerIds::Player, "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
+	: m_player(PlayerIds::Player, "Willian Munny", "Un antiguo alguacil retirado que vuelve al pueblo y se da cuenta de que algo raro esta ocurriendo.")
 {
 	WorldData world = WorldBuilder::Build();
 
@@ -183,7 +183,7 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 	const Exit* exit = currentRoom->FindExit(direction);
 	if (exit == nullptr)
 	{
-		output << "No puedes ir hacia " << DirectionUtils::ToText(direction) << ". El mapa te puede dar alguna pista...\n";
+		output << "No hay ninguna salida hacia " << DirectionUtils::ToText(direction) << ". El mapa te puede dar alguna pista...\n";
 		return GameResult::Running;
 	}
 
@@ -196,7 +196,7 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 
 	if (exit->isLocked)
 	{
-		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado.\n";
+		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado. Quizá necesites hacer algo para pasar...\n";
 		return GameResult::Running;
 	}
 
@@ -221,7 +221,7 @@ GameResult GameWorld::Examine(const std::string& target, std::ostream& output) c
 	{
 		if (!CanPlayerSee(*room))
 		{
-			output << "Esta demasiado oscuro para examinar nada de la sala.\n";
+			output << "Esta demasiado oscuro para ver que hay aqui.\n";
 			return GameResult::Running;
 		}
 
@@ -248,6 +248,7 @@ GameResult GameWorld::ReadItem(const Item& item, const Room& room, std::ostream&
 
 	// Present the item's readable information and any item-specific context.
 	item.PrintInformation(output);
+
 	if (item.GetId() == ItemIds::TornMap)
 	{
 		room.PrintExists(output);
@@ -307,7 +308,7 @@ GameResult GameWorld::TakeItem(const std::string& target, std::ostream& output)
 		return GameResult::FatalError;
 	}
 
-	output << "Has cogido " << item->GetName() << ".\n";
+	output << "Cogido.\n";
 	return GameResult::Running;
 }
 
@@ -350,7 +351,7 @@ GameResult GameWorld::DropItem(const std::string& target, std::ostream& output)
 		return GameResult::FatalError;
 	}
 
-	output << "Sueltas " << item->GetName() << ".\n";
+	output << "Soltado.\n";
 	return GameResult::Running;
 }
 
@@ -388,7 +389,7 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 	Item* containerItem = FindAccessibleItem(containerTarget);
 	if (containerItem == nullptr && !CanPlayerSee(*room))
 	{
-		output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+		output << "Esta demasiado oscuro para encontrar eso en la sala.\n";
 		return GameResult::Running;
 	}
 
@@ -448,7 +449,7 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 		return GameResult::FatalError;
 	}
 
-	output << "Metes " << item->GetName() << " en " << containerItem->GetName() << ".\n";
+	output << "Metido.\n";
 	return GameResult::Running;
 }
 
@@ -477,7 +478,7 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 	Item* container = FindAccessibleItem(containerTarget);
 	if (container == nullptr && !CanPlayerSee(*room))
 	{
-		output << "Esta demasiado oscuro para encontrar ese contenedor en la sala.\n";
+		output << "Esta demasiado oscuro para encontrar eso en la sala.\n";
 		return GameResult::Running;
 	}
 
@@ -531,7 +532,7 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 		return GameResult::FatalError;
 	}
 
-	output << "Sacas " << item->GetName() << " de " << container->GetName() << ".\n";
+	output << "Sacado.\n";
 	return GameResult::Running;
 }
 
@@ -606,7 +607,7 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 	}
 
 	item->SetContainerState(ContainerState::Open);
-	output << "Abres " << item->GetName() << ".\n";
+	output << "Abierto.\n";
 	return GameResult::Running;
 }
 
@@ -650,7 +651,7 @@ GameResult GameWorld::Unlock(ScenarioTarget target, const std::string& toolTarge
 		}
 
 		cellExit->isLocked = false;
-		output << "Abres la puerta de la celda con la Llave pequena.\n";
+		output << "Puerta abierta.\n";
 		return GameResult::Running;
 	}
 
@@ -667,7 +668,7 @@ GameResult GameWorld::Unlock(ScenarioTarget target, const std::string& toolTarge
 
 	if (!cryptExit->isLocked)
 	{
-		output << "La cerradura de la cripta ya esta abierta.\n";
+		output << "La cerradura ya esta abierta.\n";
 		return GameResult::Running;
 	}
 
@@ -681,7 +682,7 @@ GameResult GameWorld::Unlock(ScenarioTarget target, const std::string& toolTarge
 	}
 
 	cryptExit->isLocked = false;
-	output << "Colocas la Cruz de plata en la cerradura. El acceso a la cripta queda abierto.\n";
+	output << "El acceso a la cripta queda abierto.\n";
 	return GameResult::Running;
 }
 
@@ -780,7 +781,7 @@ GameResult GameWorld::LoadItem(const std::string& target, const std::string& amm
 	}
 
 	item->SetLoadState(LoadState::Loaded);
-	output << "Cargas " << item->GetName() << ".\n";
+	output << "Revolver cargado.\n";
 	return GameResult::Running;
 }
 
@@ -821,7 +822,7 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 	}
 
 	churchExit->isLocked = false;
-	output << "Cortas las cadenas con la Cizalla oxidada. La entrada a la iglesia queda libre.\n";
+	output << "Cortadas. La entrada a la iglesia queda libre.\n";
 	return GameResult::Running;
 }
 
@@ -875,8 +876,6 @@ GameResult GameWorld::ShowHelp(std::ostream& output) const
 	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto]\n";
 	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";
 	output << "  Ejemplos: abrir puerta de la celda con llave\n";
-	output << "            romper cadenas con cizalla\n";
-	output << "            abrir acceso del muro norte con cruz\n";
 	output << "- Sistema: ayuda, terminar\n";
 	return GameResult::Running;
 }

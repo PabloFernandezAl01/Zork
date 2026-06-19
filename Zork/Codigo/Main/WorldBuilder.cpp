@@ -73,27 +73,27 @@ void WorldBuilder::ConnectRooms(WorldData& world)
 	Room& oldChurch = *world.rooms.at(RoomIds::OldChurch);
 	Room& crypt = *world.rooms.at(RoomIds::Crypt);
 
-	townEntrance.AddExit(Direction::East, RoomIds::AbandonedStable);
-	townEntrance.AddExit(Direction::North, RoomIds::MainStreet);
+	townEntrance.AddExit(Direction::East, abandonedStable);
+	townEntrance.AddExit(Direction::North, mainStreet);
 
-	abandonedStable.AddExit(Direction::West, RoomIds::TownEntrance);
+	abandonedStable.AddExit(Direction::West, townEntrance);
 
-	mainStreet.AddExit(Direction::South, RoomIds::TownEntrance);
-	mainStreet.AddExit(Direction::West, RoomIds::Saloon);
-	mainStreet.AddExit(Direction::East, RoomIds::SheriffOffice);
-	mainStreet.AddExit(Direction::North, RoomIds::OldChurch, true);
+	mainStreet.AddExit(Direction::South, townEntrance);
+	mainStreet.AddExit(Direction::West, saloon);
+	mainStreet.AddExit(Direction::East, sheriffOffice);
+	mainStreet.AddExit(Direction::North, oldChurch, true);
 
-	saloon.AddExit(Direction::East, RoomIds::MainStreet);
+	saloon.AddExit(Direction::East, mainStreet);
 
-	sheriffOffice.AddExit(Direction::West, RoomIds::MainStreet);
-	sheriffOffice.AddExit(Direction::East, RoomIds::BackCell, true);
+	sheriffOffice.AddExit(Direction::West, mainStreet);
+	sheriffOffice.AddExit(Direction::East, backCell, true);
 
-	backCell.AddExit(Direction::West, RoomIds::SheriffOffice);
+	backCell.AddExit(Direction::West, sheriffOffice);
 
-	oldChurch.AddExit(Direction::South, RoomIds::MainStreet);
-	oldChurch.AddExit(Direction::North, RoomIds::Crypt, true);
+	oldChurch.AddExit(Direction::South, mainStreet);
+	oldChurch.AddExit(Direction::North, crypt, true);
 
-	crypt.AddExit(Direction::South, RoomIds::OldChurch);
+	crypt.AddExit(Direction::South, oldChurch);
 }
 
 void WorldBuilder::InitializeItems(WorldData& world)

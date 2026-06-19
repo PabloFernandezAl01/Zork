@@ -8,6 +8,7 @@
 #include <memory>
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 struct Command;
 
@@ -33,10 +34,19 @@ public:
 	// Entry point for the class, called from WestZork::Run()
 	GameResult ExecuteCommand(const Command& command, std::ostream& output);
 
-	// Shows the current room information (name, desc, items, exists)
+	// Shows the current room information (name, desc, items)
 	GameResult Look(std::ostream& output) const;
 
 private:
+
+	enum class ScenarioTarget
+	{
+		None,
+		CellDoor,
+		CryptLock,
+		ChurchChains,
+		Sheriff
+	};
 	
 	/*
 	*  Rooms & items queries and handling
@@ -46,13 +56,10 @@ private:
 	Room* FindRoomById(const std::string& roomId);
 	const Room* FindRoomById(const std::string& roomId) const;
 
-	Item* FindItemById(const std::string& itemId);
-	const Item* FindItemById(const std::string& itemId) const;
 	Item* FindAccessibleItem(const std::string& target);
 	const Item* FindAccessibleItem(const std::string& target) const;
-	static bool TargetsCellDoor(const std::string& target);
-	static bool TargetsCryptLock(const std::string& target);
-	static bool TargetsChurchChains(const std::string& target);
+	static bool MatchesAnyAlias(const std::string& target, const std::vector<std::string>& aliases);
+	static ScenarioTarget ResolveScenarioTarget(const Room& room, const std::string& target);
 
 	Room* GetCurrentRoom();
 	const Room* GetCurrentRoom() const;
@@ -71,7 +78,7 @@ private:
 	GameResult TakeItemFromContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output);
 	GameResult Open(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult OpenItem(const std::string& target, const std::string& toolTarget, std::ostream& output);
-	GameResult Unlock(const std::string& target, const std::string& toolTarget, std::ostream& output);
+	GameResult Unlock(ScenarioTarget target, const std::string& toolTarget, std::ostream& output);
 	GameResult TurnOnItem(const std::string& target, std::ostream& output);
 	GameResult LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output);
 	GameResult BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output);

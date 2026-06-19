@@ -29,11 +29,6 @@ bool Item::IsLocked() const
 	return m_containerState == ContainerState::Locked;
 }
 
-ContainerState Item::GetContainerState() const
-{
-	return m_containerState;
-}
-
 void Item::SetContainerState(ContainerState state)
 {
 	m_containerState = state;
@@ -49,11 +44,6 @@ bool Item::IsTurnedOn() const
 	return m_lightState == LightState::On;
 }
 
-LightState Item::GetLightState() const
-{
-	return m_lightState;
-}
-
 void Item::SetLightState(LightState state)
 {
 	m_lightState = state;
@@ -67,11 +57,6 @@ bool Item::IsWeapon() const
 bool Item::IsLoaded() const
 {
 	return m_loadState == LoadState::Loaded;
-}
-
-LoadState Item::GetLoadState() const
-{
-	return m_loadState;
 }
 
 void Item::SetLoadState(LoadState state)

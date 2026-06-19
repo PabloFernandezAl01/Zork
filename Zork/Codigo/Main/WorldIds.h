@@ -41,14 +41,3 @@ namespace ItemIds
 	constexpr char SilverCross[] = "cruz_plata";
 	constexpr char EliasHat[] = "sombrero_elias";
 }
-
-namespace WorldTargets
-{
-	constexpr char Cell[] = "celda";
-	constexpr char CellDoor[] = "puerta de la celda";
-	constexpr char Lock[] = "cerradura";
-	constexpr char CryptLock[] = "cerradura de la cripta";
-	constexpr char Chain[] = "cadena";
-	constexpr char Chains[] = "cadenas";
-	constexpr char Sheriff[] = "sheriff";
-}

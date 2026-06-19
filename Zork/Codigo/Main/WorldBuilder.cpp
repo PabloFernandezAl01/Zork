@@ -162,6 +162,8 @@ void WorldBuilder::InitializeItems(WorldData& world)
 		"Caja fuerte",
 		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
 	safeBox->AddAlias("caja");
+	safeBox->AddAlias("cerradura");
+	safeBox->AddAlias("cerradura de la caja fuerte");
 	safeBox->SetContainerState(ContainerState::Open);
 	const bool noteAdded = safeBox->AddItem(bartenderNote);
 	assert(noteAdded);

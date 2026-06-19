@@ -1,5 +1,6 @@
 #include "GameWorld.h"
 #include "Parser.h"
+#include "WorldAliases.h"
 #include "WorldBuilder.h"
 #include "WorldIds.h"
 
@@ -7,6 +8,7 @@
 #include <cassert>
 #include <ostream>
 #include <utility>
+#include <vector>
 
 GameWorld::GameWorld()
 	: m_player(PlayerIds::Player, "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
@@ -79,18 +81,6 @@ const Room* GameWorld::FindRoomById(const std::string& roomId) const
 	return it != m_rooms.end() ? it->second.get() : nullptr;
 }
 
-Item* GameWorld::FindItemById(const std::string& itemId)
-{
-	const auto it = m_items.find(itemId);
-	return it != m_items.end() ? it->second.get() : nullptr;
-}
-
-const Item* GameWorld::FindItemById(const std::string& itemId) const
-{
-	const auto it = m_items.find(itemId);
-	return it != m_items.end() ? it->second.get() : nullptr;
-}
-
 Item* GameWorld::FindAccessibleItem(const std::string& target)
 {
 	Item* item = m_player.FindItem(target);
@@ -125,19 +115,38 @@ const Item* GameWorld::FindAccessibleItem(const std::string& target) const
 	return room->FindItem(target);
 }
 
-bool GameWorld::TargetsCellDoor(const std::string& target)
+bool GameWorld::MatchesAnyAlias(const std::string& target, const std::vector<std::string>& aliases)
 {
-	return target == WorldTargets::Cell || target == WorldTargets::CellDoor;
+	return std::find(aliases.begin(), aliases.end(), target) != aliases.end();
 }
 
-bool GameWorld::TargetsCryptLock(const std::string& target)
+GameWorld::ScenarioTarget GameWorld::ResolveScenarioTarget(const Room& room, const std::string& target)
 {
-	return target == WorldTargets::Lock || target == WorldTargets::CryptLock;
-}
+	if (room.GetId() == RoomIds::SheriffOffice &&
+		MatchesAnyAlias(target, WorldAliases::CellDoor))
+	{
+		return ScenarioTarget::CellDoor;
+	}
 
-bool GameWorld::TargetsChurchChains(const std::string& target)
-{
-	return target == WorldTargets::Chains || target == WorldTargets::Chain;
+	if (room.GetId() == RoomIds::OldChurch &&
+		MatchesAnyAlias(target, WorldAliases::CryptLock))
+	{
+		return ScenarioTarget::CryptLock;
+	}
+
+	if (room.GetId() == RoomIds::MainStreet &&
+		MatchesAnyAlias(target, WorldAliases::ChurchChains))
+	{
+		return ScenarioTarget::ChurchChains;
+	}
+
+	if (room.GetId() == RoomIds::Crypt &&
+		MatchesAnyAlias(target, WorldAliases::Sheriff))
+	{
+		return ScenarioTarget::Sheriff;
+	}
+
+	return ScenarioTarget::None;
 }
 
 GameResult GameWorld::Look(std::ostream& output) const
@@ -528,10 +537,17 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 
 GameResult GameWorld::Open(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
-	if (TargetsCellDoor(target) || TargetsCryptLock(target))
+	const Room* room = GetCurrentRoom();
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		// This handles commands to unlock items or rooms
-		return Unlock(target, toolTarget, output);
+		return GameResult::FatalError;
+	}
+
+	const ScenarioTarget scenarioTarget = ResolveScenarioTarget(*room, target);
+	if (scenarioTarget == ScenarioTarget::CellDoor || scenarioTarget == ScenarioTarget::CryptLock)
+	{
+		return Unlock(scenarioTarget, toolTarget, output);
 	}
 
 	return OpenItem(target, toolTarget, output);
@@ -594,7 +610,7 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 	return GameResult::Running;
 }
 
-GameResult GameWorld::Unlock(const std::string& target, const std::string& toolTarget, std::ostream& output)
+GameResult GameWorld::Unlock(ScenarioTarget target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
 	assert(currentRoom != nullptr);
@@ -603,24 +619,13 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		return GameResult::FatalError;
 	}
 
-	const bool targetsBackCell = TargetsCellDoor(target);
-	const bool targetsCrypt = TargetsCryptLock(target);
-
-	if (!targetsBackCell && !targetsCrypt)
-	{
-		output << "No encuentras ninguna cerradura que puedas abrir.\n";
-		return GameResult::Running;
-	}
+	assert(target == ScenarioTarget::CellDoor || target == ScenarioTarget::CryptLock);
 
 	// ------------- The user is trying to unlock "Celda trasera" -----------------
 
-	if (targetsBackCell)
+	if (target == ScenarioTarget::CellDoor)
 	{
-		if (currentRoom->GetId() != RoomIds::SheriffOffice)
-		{
-			output << "No encuentras la puerta de la celda aqui.\n";
-			return GameResult::Running;
-		}
+		assert(currentRoom->GetId() == RoomIds::SheriffOffice);
 
 		Exit* cellExit = currentRoom->FindExit(Direction::East);
 		assert(cellExit != nullptr);
@@ -651,11 +656,7 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 
 	// ------------- The user is trying to unlock "Cripta al norte de la iglesia" -----------------
 
-	if (currentRoom->GetId() != RoomIds::OldChurch)
-	{
-		output << "No encuentras la cerradura de la cripta aqui.\n";
-		return GameResult::Running;
-	}
+	assert(currentRoom->GetId() == RoomIds::OldChurch);
 
 	Exit* cryptExit = currentRoom->FindExit(Direction::North);
 	assert(cryptExit != nullptr);
@@ -792,15 +793,9 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 		return GameResult::FatalError;
 	}
 
-	if (!TargetsChurchChains(target))
+	if (ResolveScenarioTarget(*currentRoom, target) != ScenarioTarget::ChurchChains)
 	{
 		output << "No sabes como romper eso.\n";
-		return GameResult::Running;
-	}
-
-	if (currentRoom->GetId() != RoomIds::MainStreet)
-	{
-		output << "No encuentras esas cadenas aqui.\n";
 		return GameResult::Running;
 	}
 
@@ -839,7 +834,7 @@ GameResult GameWorld::ShootTarget(const std::string& target, const std::string& 
 		return GameResult::FatalError;
 	}
 
-	if (target != WorldTargets::Sheriff)
+	if (ResolveScenarioTarget(*currentRoom, target) != ScenarioTarget::Sheriff)
 	{
 		output << "No sabes a que intentas disparar.\n";
 		return GameResult::Running;
@@ -848,12 +843,6 @@ GameResult GameWorld::ShootTarget(const std::string& target, const std::string& 
 	if (!CanPlayerSee(*currentRoom))
 	{
 		output << "No ves nada.\n";
-		return GameResult::Running;
-	}
-
-	if (currentRoom->GetId() != RoomIds::Crypt)
-	{
-		output << "El sheriff no esta aqui.\n";
 		return GameResult::Running;
 	}
 
@@ -885,6 +874,9 @@ GameResult GameWorld::ShowHelp(std::ostream& output) const
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
 	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto]\n";
 	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";
+	output << "  Ejemplos: abrir puerta de la celda con llave\n";
+	output << "            romper cadenas con cizalla\n";
+	output << "            abrir acceso del muro norte con cruz\n";
 	output << "- Sistema: ayuda, terminar\n";
 	return GameResult::Running;
 }

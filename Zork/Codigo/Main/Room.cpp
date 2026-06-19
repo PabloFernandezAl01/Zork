@@ -60,11 +60,6 @@ const Exit* Room::FindExit(Direction direction) const
 	return it != m_exits.end() ? &it->second : nullptr;
 }
 
-const std::map<Direction, Exit>& Room::GetExits() const
-{
-	return m_exits;
-}
-
 Item* Room::FindItem(const std::string& target)
 {
 	const auto it = std::find_if(m_items.begin(), m_items.end(),

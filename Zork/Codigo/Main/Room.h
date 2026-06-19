@@ -48,7 +48,6 @@ public:
 	Exit* FindExit(Direction direction);
 	const Exit* FindExit(Direction direction) const;
 
-	const std::map<Direction, Exit>& GetExits() const;
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
 

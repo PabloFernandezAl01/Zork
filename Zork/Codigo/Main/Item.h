@@ -41,17 +41,14 @@ public:
 	bool IsContainer() const;
 	bool IsOpen() const;
 	bool IsLocked() const;
-	ContainerState GetContainerState() const;
 	void SetContainerState(ContainerState state);
 
 	bool IsLightSource() const;
 	bool IsTurnedOn() const;
-	LightState GetLightState() const;
 	void SetLightState(LightState state);
 
 	bool IsWeapon() const;
 	bool IsLoaded() const;
-	LoadState GetLoadState() const;
 	void SetLoadState(LoadState state);
 
 	bool RequiresLightToExamine() const;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Direction.h"
 #include "Entity.h"
 #include "Item.h"
 
@@ -8,21 +9,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-// All possible movement directions in WestZork
-enum class Direction
-{
-	North,
-	South,
-	East,
-	West
-};
-
-struct DirectionUtils
-{
-	// Enum to string converter
-	static std::string ToText(Direction direction);
-};
 
 struct Exit
 {

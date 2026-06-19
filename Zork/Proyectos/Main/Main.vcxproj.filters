@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Codigo\Main\Direction.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Codigo\Main\WestZork.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>

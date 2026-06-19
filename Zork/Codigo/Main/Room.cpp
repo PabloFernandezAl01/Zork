@@ -4,23 +4,6 @@
 #include <cassert>
 #include <ostream>
 
-std::string DirectionUtils::ToText(Direction direction)
-{
-	switch (direction)
-	{
-	case Direction::North:
-		return "norte";
-	case Direction::South:
-		return "sur";
-	case Direction::East:
-		return "este";
-	case Direction::West:
-		return "oeste";
-	default:
-		return "desconocida";
-	}
-}
-
 Exit::Exit()
 	: isLocked(false)
 {

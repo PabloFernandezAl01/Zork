@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Room.h" // <--- To reuse Direction struct
+#include "Direction.h"
 
 #include <cstddef>
 #include <string>

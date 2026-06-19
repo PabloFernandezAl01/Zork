@@ -1,6 +1,7 @@
 #include "Item.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <ostream>
 
@@ -173,18 +174,30 @@ const Item* Item::FindItem(const std::string& target) const
 	return it != m_containedItems.end() ? it->get() : nullptr;
 }
 
-void Item::AddItem(const std::shared_ptr<Item>& item) 
+bool Item::AddItem(const std::shared_ptr<Item>& item)
 {
-	if (!IsContainer() || !IsOpen())
-		return; // <---- GameWorld logic is in charge of checking if an item can contain another items. This return should never be reached. 
+	assert(item != nullptr);
+	assert(IsContainer());
+	assert(IsOpen());
+
+	if (item == nullptr || !IsContainer() || !IsOpen())
+	{
+		return false;
+	}
 
 	m_containedItems.push_back(item);
+	return true;
 }
 
 std::shared_ptr<Item> Item::RemoveItem(const std::string& itemId)
 {
+	assert(IsContainer());
+	assert(IsOpen());
+
 	if (!IsContainer() || !IsOpen())
-		return nullptr; // <---- GameWorld logic is in charge of checking if an item can contain another items. This return should never be reached.
+	{
+		return nullptr;
+	}
 
 	// Search for the item inside *this* item
 	const auto it = std::find_if(m_containedItems.begin(), m_containedItems.end(),

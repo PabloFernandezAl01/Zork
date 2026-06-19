@@ -73,7 +73,7 @@ public:
 	*/ 
 	void PrintInformation(std::ostream& output) const override;
 
-	void AddItem(const std::shared_ptr<Item>& item);
+	bool AddItem(const std::shared_ptr<Item>& item);
 	std::shared_ptr<Item> RemoveItem(const std::string& itemId);
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;

@@ -1,6 +1,7 @@
 #include "Room.h"
 
 #include <algorithm>
+#include <cassert>
 #include <ostream>
 
 std::string DirectionUtils::ToText(Direction direction)
@@ -124,9 +125,16 @@ void Room::AddExit(Direction direction, const std::string& targetRoomId, bool lo
 	m_exits[direction] = Exit(targetRoomId, locked);
 }
 
-void Room::AddItem(const std::shared_ptr<Item>& item)
+bool Room::AddItem(const std::shared_ptr<Item>& item)
 {
+	assert(item != nullptr);
+	if (item == nullptr)
+	{
+		return false;
+	}
+
 	m_items.push_back(item);
+	return true;
 }
 
 std::shared_ptr<Item> Room::RemoveItem(const std::string& itemId)

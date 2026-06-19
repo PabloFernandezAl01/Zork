@@ -36,7 +36,7 @@ public:
 	void PrintInformation(std::ostream& output) const override;
 
 	void SetCurrentRoomId(const std::string& roomId);
-	void AddItemToInventory(const std::shared_ptr<Item>& item);
+	bool AddItemToInventory(const std::shared_ptr<Item>& item);
 	std::shared_ptr<Item> RemoveItemFromInventory(const std::string& itemId);
 
 private:

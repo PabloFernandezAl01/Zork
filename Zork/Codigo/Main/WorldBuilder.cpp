@@ -1,6 +1,8 @@
 #include "WorldBuilder.h"
 #include "WorldIds.h"
 
+#include <cassert>
+
 WorldData WorldBuilder::Build()
 {
 	WorldData world;
@@ -161,7 +163,9 @@ void WorldBuilder::InitializeItems(WorldData& world)
 		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
 	safeBox->AddAlias("caja");
 	safeBox->SetContainerState(ContainerState::Open);
-	safeBox->AddItem(bartenderNote);
+	const bool noteAdded = safeBox->AddItem(bartenderNote);
+	assert(noteAdded);
+	(void)noteAdded;
 	safeBox->SetContainerState(ContainerState::Locked);
 
 	std::shared_ptr<Item> revolver = std::make_shared<Item>(
@@ -214,27 +218,46 @@ void WorldBuilder::InitializeItems(WorldData& world)
 
 void WorldBuilder::PlaceItems(WorldData& world)
 {
-	world.rooms.at(RoomIds::TownEntrance)->AddItem(world.items.at(ItemIds::WhiskyBottle));
-	world.rooms.at(RoomIds::TownEntrance)->AddItem(world.items.at(ItemIds::TornMap));
-	world.rooms.at(RoomIds::AbandonedStable)->AddItem(world.items.at(ItemIds::Lantern));
-	world.rooms.at(RoomIds::AbandonedStable)->AddItem(world.items.at(ItemIds::Matches));
-	world.rooms.at(RoomIds::MainStreet)->AddItem(world.items.at(ItemIds::BoltCutter));
-	world.rooms.at(RoomIds::MainStreet)->AddItem(world.items.at(ItemIds::PotatoSack));
-	world.rooms.at(RoomIds::Saloon)->AddItem(world.items.at(ItemIds::SmallKey));
-	world.rooms.at(RoomIds::Saloon)->AddItem(world.items.at(ItemIds::SafeBox));
-	world.rooms.at(RoomIds::SheriffOffice)->AddItem(world.items.at(ItemIds::Revolver));
-	world.rooms.at(RoomIds::SheriffOffice)->AddItem(world.items.at(ItemIds::Ammunition));
-	world.rooms.at(RoomIds::SheriffOffice)->AddItem(world.items.at(ItemIds::SheriffDiary));
-	world.rooms.at(RoomIds::BackCell)->AddItem(world.items.at(ItemIds::SilverCross));
-	world.rooms.at(RoomIds::OldChurch)->AddItem(world.items.at(ItemIds::EliasHat));
+	const auto placeItem = [&world](const std::string& roomId, const std::string& itemId)
+	{
+		const bool added = world.rooms.at(roomId)->AddItem(world.items.at(itemId));
+		assert(added);
+		(void)added;
+	};
+
+	placeItem(RoomIds::TownEntrance, ItemIds::WhiskyBottle);
+	placeItem(RoomIds::TownEntrance, ItemIds::TornMap);
+	placeItem(RoomIds::AbandonedStable, ItemIds::Lantern);
+	placeItem(RoomIds::AbandonedStable, ItemIds::Matches);
+	placeItem(RoomIds::MainStreet, ItemIds::BoltCutter);
+	placeItem(RoomIds::MainStreet, ItemIds::PotatoSack);
+	placeItem(RoomIds::Saloon, ItemIds::SmallKey);
+	placeItem(RoomIds::Saloon, ItemIds::SafeBox);
+	placeItem(RoomIds::SheriffOffice, ItemIds::Revolver);
+	placeItem(RoomIds::SheriffOffice, ItemIds::Ammunition);
+	placeItem(RoomIds::SheriffOffice, ItemIds::SheriffDiary);
+	placeItem(RoomIds::BackCell, ItemIds::SilverCross);
+	placeItem(RoomIds::OldChurch, ItemIds::EliasHat);
 }
 
 void WorldBuilder::AddRoom(WorldData& world, const std::shared_ptr<Room>& room)
 {
+	assert(room != nullptr);
+	if (room == nullptr)
+	{
+		return;
+	}
+
 	world.rooms[room->GetId()] = room;
 }
 
 void WorldBuilder::AddItem(WorldData& world, const std::shared_ptr<Item>& item)
 {
+	assert(item != nullptr);
+	if (item == nullptr)
+	{
+		return;
+	}
+
 	world.items[item->GetId()] = item;
 }

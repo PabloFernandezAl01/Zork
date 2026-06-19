@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <algorithm>
+#include <cassert>
 #include <ostream>
 
 Player::Player(const std::string& id, const std::string& name, const std::string& description)
@@ -94,9 +95,16 @@ void Player::SetCurrentRoomId(const std::string& roomId)
 	m_currentRoomId = roomId;
 }
 
-void Player::AddItemToInventory(const std::shared_ptr<Item>& item)
+bool Player::AddItemToInventory(const std::shared_ptr<Item>& item)
 {
+	assert(item != nullptr);
+	if (item == nullptr)
+	{
+		return false;
+	}
+
 	m_inventory.push_back(item);
+	return true;
 }
 
 std::shared_ptr<Item> Player::RemoveItemFromInventory(const std::string& itemId)

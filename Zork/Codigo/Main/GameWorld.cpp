@@ -4,23 +4,9 @@
 #include "WorldIds.h"
 
 #include <algorithm>
-#include <iostream>
+#include <cassert>
+#include <ostream>
 #include <utility>
-
-bool GameWorld::TargetsCellDoor(const std::string& target)
-{
-	return target == WorldTargets::Cell || target == WorldTargets::CellDoor;
-}
-
-bool GameWorld::TargetsCryptLock(const std::string& target)
-{
-	return target == WorldTargets::Lock || target == WorldTargets::CryptLock;
-}
-
-bool GameWorld::TargetsChurchChains(const std::string& target)
-{
-	return target == WorldTargets::Chains || target == WorldTargets::Chain;
-}
 
 GameWorld::GameWorld()
 	: m_player(PlayerIds::Player, "James", "Un antiguo alguacil que vuelve al pueblo en busca de su hermano Elias.")
@@ -139,12 +125,27 @@ const Item* GameWorld::FindAccessibleItem(const std::string& target) const
 	return room->FindItem(target);
 }
 
+bool GameWorld::TargetsCellDoor(const std::string& target)
+{
+	return target == WorldTargets::Cell || target == WorldTargets::CellDoor;
+}
+
+bool GameWorld::TargetsCryptLock(const std::string& target)
+{
+	return target == WorldTargets::Lock || target == WorldTargets::CryptLock;
+}
+
+bool GameWorld::TargetsChurchChains(const std::string& target)
+{
+	return target == WorldTargets::Chains || target == WorldTargets::Chain;
+}
+
 GameResult GameWorld::Look(std::ostream& output) const
 {
 	const Room* room = GetCurrentRoom();
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen. 
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -163,9 +164,9 @@ GameResult GameWorld::Look(std::ostream& output) const
 GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
-	if (currentRoom == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen. 
+	assert(currentRoom != nullptr);
+	if (currentRoom == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -178,9 +179,9 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 	}
 
 	Room* nextRoom = FindRoomById(exit->targetRoomId);
-	if (nextRoom == nullptr) // <--------- Just a check that warns the programmer. This should not ever happen.
+	assert(nextRoom != nullptr);
+	if (nextRoom == nullptr)
 	{
-		std::cerr << "The pointer to nextRoom must never be nullptr.\n";
 		return GameResult::FatalError;
 	}
 
@@ -198,9 +199,9 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 GameResult GameWorld::Examine(const std::string& target, std::ostream& output) const
 {
 	const Room* room = GetCurrentRoom(); 
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -255,9 +256,9 @@ GameResult GameWorld::ShowInventory(std::ostream& output) const
 GameResult GameWorld::TakeItem(const std::string& target, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -280,7 +281,23 @@ GameResult GameWorld::TakeItem(const std::string& target, std::ostream& output)
 		return GameResult::Running;
 	}
 
-	m_player.AddItemToInventory(room->RemoveItem(item->GetId()));
+	const std::shared_ptr<Item> removedItem = room->RemoveItem(item->GetId());
+	assert(removedItem != nullptr);
+	if (removedItem == nullptr)
+	{
+		return GameResult::FatalError;
+	}
+
+	const bool addedToInventory = m_player.AddItemToInventory(removedItem);
+	assert(addedToInventory);
+	if (!addedToInventory)
+	{
+		const bool restored = room->AddItem(removedItem);
+		assert(restored);
+		(void)restored;
+		return GameResult::FatalError;
+	}
+
 	output << "Has cogido " << item->GetName() << ".\n";
 	return GameResult::Running;
 }
@@ -288,9 +305,9 @@ GameResult GameWorld::TakeItem(const std::string& target, std::ostream& output)
 GameResult GameWorld::DropItem(const std::string& target, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -307,7 +324,23 @@ GameResult GameWorld::DropItem(const std::string& target, std::ostream& output)
 		return GameResult::Running;
 	}
 
-	room->AddItem(m_player.RemoveItemFromInventory(item->GetId()));
+	const std::shared_ptr<Item> removedItem = m_player.RemoveItemFromInventory(item->GetId());
+	assert(removedItem != nullptr);
+	if (removedItem == nullptr)
+	{
+		return GameResult::FatalError;
+	}
+
+	const bool addedToRoom = room->AddItem(removedItem);
+	assert(addedToRoom);
+	if (!addedToRoom)
+	{
+		const bool restored = m_player.AddItemToInventory(removedItem);
+		assert(restored);
+		(void)restored;
+		return GameResult::FatalError;
+	}
+
 	output << "Sueltas " << item->GetName() << ".\n";
 	return GameResult::Running;
 }
@@ -315,9 +348,9 @@ GameResult GameWorld::DropItem(const std::string& target, std::ostream& output)
 GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -389,7 +422,23 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 		return GameResult::Running;
 	}
 
-	containerItem->AddItem(m_player.RemoveItemFromInventory(item->GetId()));
+	const std::shared_ptr<Item> removedItem = m_player.RemoveItemFromInventory(item->GetId());
+	assert(removedItem != nullptr);
+	if (removedItem == nullptr)
+	{
+		return GameResult::FatalError;
+	}
+
+	const bool addedToContainer = containerItem->AddItem(removedItem);
+	assert(addedToContainer);
+	if (!addedToContainer)
+	{
+		const bool restored = m_player.AddItemToInventory(removedItem);
+		assert(restored);
+		(void)restored;
+		return GameResult::FatalError;
+	}
+
 	output << "Metes " << item->GetName() << " en " << containerItem->GetName() << ".\n";
 	return GameResult::Running;
 }
@@ -397,9 +446,9 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const std::string& containerTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
-	if (room == nullptr) // <--------- Just  a check that warns the programmer. This should not ever happen.
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -456,7 +505,23 @@ GameResult GameWorld::TakeItemFromContainer(const std::string& itemTarget, const
 		return GameResult::Running;
 	}
 
-	m_player.AddItemToInventory(container->RemoveItem(item->GetId()));
+	const std::shared_ptr<Item> removedItem = container->RemoveItem(item->GetId());
+	assert(removedItem != nullptr);
+	if (removedItem == nullptr)
+	{
+		return GameResult::FatalError;
+	}
+
+	const bool addedToInventory = m_player.AddItemToInventory(removedItem);
+	assert(addedToInventory);
+	if (!addedToInventory)
+	{
+		const bool restored = container->AddItem(removedItem);
+		assert(restored);
+		(void)restored;
+		return GameResult::FatalError;
+	}
+
 	output << "Sacas " << item->GetName() << " de " << container->GetName() << ".\n";
 	return GameResult::Running;
 }
@@ -475,9 +540,9 @@ GameResult GameWorld::Open(const std::string& target, const std::string& toolTar
 GameResult GameWorld::OpenItem(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* room = GetCurrentRoom();
+	assert(room != nullptr);
 	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -532,9 +597,9 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 GameResult GameWorld::Unlock(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
+	assert(currentRoom != nullptr);
 	if (currentRoom == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -558,9 +623,9 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 		}
 
 		Exit* cellExit = currentRoom->FindExit(Direction::East);
+		assert(cellExit != nullptr);
 		if (cellExit == nullptr)
 		{
-			std::cerr << "The exit to \"Celda trasera\" must always exist.\n";
 			return GameResult::FatalError;
 		}
 
@@ -593,9 +658,9 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 	}
 
 	Exit* cryptExit = currentRoom->FindExit(Direction::North);
+	assert(cryptExit != nullptr);
 	if (cryptExit == nullptr)
 	{
-		std::cerr << "The exit to \"Cripta al norte de la iglesia\" must always exist.\n";
 		return GameResult::FatalError;
 	}
 
@@ -621,9 +686,10 @@ GameResult GameWorld::Unlock(const std::string& target, const std::string& toolT
 
 GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output)
 {
-	if (GetCurrentRoom() == nullptr)
+	const Room* room = GetCurrentRoom();
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -658,8 +724,7 @@ GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output
 	output << "Enciendes " << item->GetName() << ".\n";
 
 	// Immediately reveal the room when the newly lit item makes it visible.
-	const Room* room = GetCurrentRoom();
-	if (room != nullptr && room->IsDark())
+	if (room->IsDark())
 	{
 		return Look(output);
 	}
@@ -669,9 +734,10 @@ GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output
 
 GameResult GameWorld::LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output)
 {
-	if (GetCurrentRoom() == nullptr)
+	const Room* room = GetCurrentRoom();
+	assert(room != nullptr);
+	if (room == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -705,7 +771,13 @@ GameResult GameWorld::LoadItem(const std::string& target, const std::string& amm
 		return GameResult::Running;
 	}
 
-	m_player.RemoveItemFromInventory(ammunition->GetId());
+	const std::shared_ptr<Item> removedAmmunition = m_player.RemoveItemFromInventory(ammunition->GetId());
+	assert(removedAmmunition != nullptr);
+	if (removedAmmunition == nullptr)
+	{
+		return GameResult::FatalError;
+	}
+
 	item->SetLoadState(LoadState::Loaded);
 	output << "Cargas " << item->GetName() << ".\n";
 	return GameResult::Running;
@@ -714,9 +786,9 @@ GameResult GameWorld::LoadItem(const std::string& target, const std::string& amm
 GameResult GameWorld::BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
+	assert(currentRoom != nullptr);
 	if (currentRoom == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 
@@ -733,9 +805,9 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 	}
 
 	Exit* churchExit = currentRoom->FindExit(Direction::North);
+	assert(churchExit != nullptr);
 	if (churchExit == nullptr)
 	{
-		std::cerr << "The exit to the old church must always exist.\n";
 		return GameResult::FatalError;
 	}
 
@@ -761,9 +833,9 @@ GameResult GameWorld::BreakObstacle(const std::string& target, const std::string
 GameResult GameWorld::ShootTarget(const std::string& target, const std::string& weaponTarget, std::ostream& output)
 {
 	Room* currentRoom = GetCurrentRoom();
+	assert(currentRoom != nullptr);
 	if (currentRoom == nullptr)
 	{
-		std::cerr << "GetCurrentRoom() must always return a valid Room.\n";
 		return GameResult::FatalError;
 	}
 

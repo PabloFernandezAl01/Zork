@@ -69,7 +69,7 @@ public:
 	/*
 	* Item addition and removing
 	*/
-	void AddItem(const std::shared_ptr<Item>& item);
+	bool AddItem(const std::shared_ptr<Item>& item);
 	std::shared_ptr<Item> RemoveItem(const std::string& itemId);
 
 private:

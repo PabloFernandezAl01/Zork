@@ -46,6 +46,7 @@ namespace WorldAliases
 	{
 		"sheriff",
 		"enemigo",
-		"secuestrador"
+		"little bill",
+		"bill"
 	};
 }

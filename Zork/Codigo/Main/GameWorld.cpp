@@ -606,6 +606,24 @@ GameResult GameWorld::OpenItem(const std::string& target, const std::string& too
 			return GameResult::Running;
 		}
 	}
+	else if (!toolTarget.empty())
+	{
+		if (!IsAValidItem(toolTarget))
+		{
+			output << "No encuentras esa herramienta.\n";
+			return GameResult::Running;
+		}
+
+		const Item* tool = m_player.FindItem(toolTarget);
+		if (tool == nullptr)
+		{
+			output << "No tienes esa herramienta.\n";
+			return GameResult::Running;
+		}
+
+		output << "No necesitas " << tool->GetName() << " para abrir " << item->GetName() << ".\n";
+		return GameResult::Running;
+	}
 
 	item->SetContainerState(ContainerState::Open);
 	output << "Abierto.\n";

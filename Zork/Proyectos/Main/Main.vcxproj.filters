@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\Codigo\Main\WorldAliases.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Codigo\Main\AsciiArt.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Codigo\Main\WestZork.cpp">

@@ -1,5 +1,7 @@
 #include "WestZork.h"
 
+#include "AsciiArt.h"
+
 #include <iostream>
 #include <string>
 
@@ -8,6 +10,11 @@ WestZork::WestZork() {}
 void WestZork::Run()
 {
 	std::cout << "-------------------------- WEST ZORK ------------------------------\n\n";
+	for (const char* artChunk : Presentation::WestZorkAsciiArt)
+	{
+		std::cout << artChunk;
+	}
+	std::cout << '\n';
 	std::cout << "Yellowville, Texas. 1870.\n\n";
 	std::cout << "Regresas de visitar a un viejo amigo y encuentras el pueblo vacio.\n";
 	std::cout << "Tu hermano Ned no ha ido a recibirte. Tampoco esta en casa.\n";

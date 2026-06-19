@@ -56,7 +56,7 @@ void WorldBuilder::InitializeRooms(WorldData& world)
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::Crypt,
 		"Cripta al norte de la iglesia",
-		"Un pasadizo de piedra conduce a una cripta olvidada. El sheriff mantiene a Elias cautivo y te apunta con su revolver."));
+		"Un pasadizo de piedra conduce a una cripta olvidada. El sheriff mantiene a Ned Munny cautivo y te apunta con su revolver."));
 
 	world.rooms.at(RoomIds::BackCell)->SetDark(true);
 	world.rooms.at(RoomIds::Crypt)->SetDark(true);
@@ -152,7 +152,7 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> bartenderNote = std::make_shared<Item>(
 		ItemIds::BartenderNote,
 		"Nota del tabernero",
-		"La nota dice: \"El sheriff se lleva a cualquiera que hace preguntas. Anoche oi a un hombre llamado Elias gritar desde la celda trasera de su oficina.\"");
+		"La nota dice: \"El sheriff se lleva a cualquiera que hace preguntas. Anoche oi a un hombre llamado Ned Munny gritar desde la celda trasera de su oficina.\"");
 	bartenderNote->AddAlias("nota");
 	bartenderNote->AddAlias("nota del tabernero");
 	bartenderNote->SetRequiresLightToExamine(true);
@@ -186,7 +186,7 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> sheriffDiary = std::make_shared<Item>(
 		ItemIds::SheriffDiary,
 		"Diario del sheriff",
-		"Una entrada reciente dice: \"He trasladado a Elias a la cripta bajo la iglesia. Oculte en la celda la cruz de plata que abre la cerradura del muro norte.\"");
+		"Una entrada reciente dice: \"He trasladado a Ned Munny a la cripta bajo la iglesia. Oculte en la celda la cruz de plata que abre la cerradura del muro norte.\"");
 	sheriffDiary->AddAlias("diario");
 	sheriffDiary->SetRequiresLightToExamine(true);
 
@@ -196,11 +196,11 @@ void WorldBuilder::InitializeItems(WorldData& world)
 		"Una cruz de plata pequena, demasiado limpia para este lugar.");
 	silverCross->AddAlias("cruz");
 
-	std::shared_ptr<Item> eliasHat = std::make_shared<Item>(
-		ItemIds::EliasHat,
-		"Sombrero de Elias",
+	std::shared_ptr<Item> nedMunnyHat = std::make_shared<Item>(
+		ItemIds::NedMunnyHat,
+		"Sombrero de Ned Munny",
 		"El sombrero de tu hermano. Reconocerias esa cinta azul en cualquier parte.");
-	eliasHat->AddAlias("sombrero");
+	nedMunnyHat->AddAlias("sombrero");
 
 	AddItem(world, whiskyBottle);
 	AddItem(world, tornMap);
@@ -215,7 +215,7 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	AddItem(world, ammunition);
 	AddItem(world, sheriffDiary);
 	AddItem(world, silverCross);
-	AddItem(world, eliasHat);
+	AddItem(world, nedMunnyHat);
 }
 
 void WorldBuilder::PlaceItems(WorldData& world)
@@ -239,7 +239,7 @@ void WorldBuilder::PlaceItems(WorldData& world)
 	placeItem(RoomIds::SheriffOffice, ItemIds::Ammunition);
 	placeItem(RoomIds::SheriffOffice, ItemIds::SheriffDiary);
 	placeItem(RoomIds::BackCell, ItemIds::SilverCross);
-	placeItem(RoomIds::OldChurch, ItemIds::EliasHat);
+	placeItem(RoomIds::OldChurch, ItemIds::NedMunnyHat);
 }
 
 void WorldBuilder::AddRoom(WorldData& world, const std::shared_ptr<Room>& room)

@@ -857,12 +857,12 @@ GameResult GameWorld::ShootTarget(const std::string& target, const std::string& 
 
 	if (!weapon->IsLoaded())
 	{
-		output << "Aprietas el gatillo, pero el Revolver esta descargado. El Sheriff te dispara y luego remata la tarea con Elias\n";
+		output << "Aprietas el gatillo, pero el Revolver esta descargado. El Sheriff te dispara y luego remata la tarea con Ned Munny\n";
 		return GameResult::Defeat;
 	}
 
 	weapon->SetLoadState(LoadState::Unloaded);
-	output << "Disparas al sheriff antes de que pueda reaccionar. Elias queda libre.\n";
+	output << "Disparas al sheriff antes de que pueda reaccionar. Ned Munny queda libre.\n";
 	return GameResult::Victory;
 }
 

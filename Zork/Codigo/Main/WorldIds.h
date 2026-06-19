@@ -39,5 +39,5 @@ namespace ItemIds
 	constexpr char Ammunition[] = "municion";
 	constexpr char SheriffDiary[] = "diario_sheriff";
 	constexpr char SilverCross[] = "cruz_plata";
-	constexpr char EliasHat[] = "sombrero_elias";
+	constexpr char NedMunnyHat[] = "sombrero_ned_munny";
 }

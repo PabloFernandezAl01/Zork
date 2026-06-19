@@ -90,12 +90,18 @@ void Item::PrintInformation(std::ostream& output) const
 
 	if (IsLightSource())
 	{
-		output << "Estado: " << (IsTurnedOn() ? "encendido" : "apagado") << ".\n";
+		output << "Estado: "
+			<< (IsTurnedOn() ? "encendido y haciendo retroceder a las sombras"
+				: "apagado, con una utilidad puramente decorativa")
+			<< ".\n";
 	}
 
 	if (IsWeapon())
 	{
-		output << "Estado: " << (IsLoaded() ? "cargado" : "descargado") << ".\n";
+		output << "Estado: "
+			<< (IsLoaded() ? "cargado; conviene recordar cual de sus extremos apunta hacia delante"
+				: "descargado; intimida menos de cerca")
+			<< ".\n";
 	}
 
 	if (!IsContainer())
@@ -105,24 +111,24 @@ void Item::PrintInformation(std::ostream& output) const
 
 	if (IsLocked())
 	{
-		output << "Esta bloqueado.\n";
+		output << "Esta bloqueado y satisfecho consigo mismo.\n";
 		return;
 	}
 
 	if (!IsOpen())
 	{
-		output << "Esta cerrado.\n";
+		output << "Esta cerrado, guardando su contenido y sus opiniones.\n";
 		return;
 	}
 
 	if (m_containedItems.empty())
 	{
-		output << "Esta vacio.\n";
+		output << "Esta vacio. Todo ese espacio protegido para absolutamente nada.\n";
 		return;
 	}
 
 	// If the item is a container and it's not empty: print the names of the items inside
-	output << "Contiene:\n";
+	output << "En su interior encuentras:\n";
 	for (const auto& item : m_containedItems)
 		output << "- " << item->GetName() << '\n';
 }

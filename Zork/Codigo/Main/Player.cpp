@@ -79,11 +79,11 @@ void Player::PrintInformation(std::ostream& output) const
 
 	if (m_inventory.empty())
 	{
-		output << "No llevas nada.\n";
+		output << "No llevas nada. Ligero de equipaje y, por ahora, tambien de soluciones.\n";
 		return;
 	}
 
-	output << "Llevas:\n";
+	output << "Tras una inspeccion profesional de tus bolsillos, llevas:\n";
 	for (const std::shared_ptr<Item>& item : m_inventory)
 	{
 		output << "- " << item->GetName() << '\n';

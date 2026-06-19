@@ -72,11 +72,11 @@ void Room::PrintInformation(std::ostream& output) const
 
 	if (m_items.empty())
 	{
-		output << "No ves ningun objeto aqui.\n";
+		output << "No ves ningun objeto util aqui. El polvo no cuenta; Yellowville tiene de sobra.\n";
 	}
 	else
 	{
-		output << "Ves:\n";
+		output << "Entre tanta decadencia, ves:\n";
 		for (const std::shared_ptr<Item>& item : m_items)
 		{
 			output << "- " << item->GetName() << '\n';
@@ -88,11 +88,11 @@ void Room::PrintExists(std::ostream& output) const
 {
 	if (m_exits.empty())
 	{
-		output << "No hay conexiones desde aqui.\n";
+		output << "No hay conexiones desde aqui. Un mapa sorprendentemente honesto.\n";
 		return;
 	}
 
-	output << "Conexiones disponibles:\n";
+	output << "El mapa, haciendo por fin algo util, muestra estas conexiones:\n";
 	for (const auto& exit : m_exits)
 	{
 		output << "- " << exit.second.targetRoomName << " al "

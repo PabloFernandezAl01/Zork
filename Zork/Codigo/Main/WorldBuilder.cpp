@@ -21,42 +21,51 @@ void WorldBuilder::InitializeRooms(WorldData& world)
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::TownEntrance,
 		"Entrada al pueblo",
-		"El viejo arco de madera marca la entrada a Yellowville. El polvo cubre el camino y el silencio pesa demasiado."));
+		"El viejo arco de madera anuncia YELLOWVILLE con tres letras torcidas y un optimismo conmovedor. "
+		"El camino esta cubierto de polvo, no hay un alma a la vista y hasta los buitres parecen guardar las distancias."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::AbandonedStable,
 		"Establo abandonado",
-		"Un establo medio hundido. Huele a heno podrido, madera humeda y algo que lleva anos sin moverse."));
+		"El establo se inclina hacia un lado como si estuviera cansado de fingir que sigue en pie. "
+		"Huele a heno podrido, madera humeda y decisiones tomadas por caballos."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::MainStreet,
 		"Calle Principal",
-		"La calle cruza el pueblo de lado a lado. Las fachadas vacias parecen observar cada paso."));
+		"La Calle Principal cruza Yellowville de lado a lado, aunque lo de \"principal\" resulta bastante generoso. "
+		"Las ventanas estan cerradas, las fachadas vacias y alguien ha dejado unas cadenas nuevas en la puerta de la iglesia."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::Saloon,
 		"Saloon",
-		"Las puertas del saloon crujen con el viento. Botellas rotas y mesas volcadas cuentan una mala noche."));
+		"Las puertas del saloon crujen con el viento, porque nadie se ha molestado en recibirte. "
+		"Botellas rotas, mesas volcadas y una barra abandonada cuentan una noche pesima sin necesidad de testigos."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::SheriffOffice,
 		"Oficina del Sheriff",
-		"Una oficina pequena, con barrotes oxidados al fondo y papeles amarillentos sobre el escritorio."));
+		"Una oficina pequena y demasiado ordenada para un pueblo que se esta cayendo a pedazos. "
+		"Hay papeles sobre el escritorio y una puerta con barrotes al fondo. Little Bill siempre aprecio el orden, "
+		"sobre todo cuando podia imponerlo a tiros."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::BackCell,
 		"Celda trasera",
-		"Una celda oscura y estrecha. La humedad se pega a la piel y cuesta distinguir el suelo."));
+		"Una celda estrecha donde la humedad ha ganado hace tiempo. Las paredes conservan aranazos, "
+		"pero ninguna explicacion amable sobre quien los hizo."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::OldChurch,
 		"Iglesia vieja",
-		"El campanario esta torcido y la puerta principal conserva marcas profundas de cadenas."));
+		"El campanario esta torcido, los bancos cubiertos de polvo y la fe parece haberse marchado antes que los vecinos. "
+		"En el muro norte hay un acceso sellado con una cerradura en forma de cruz. Sutil no es."));
 
 	AddRoom(world, std::make_shared<Room>(
 		RoomIds::Crypt,
 		"Cripta al norte de la iglesia",
-		"Un pasadizo de piedra conduce a una cripta olvidada. El sheriff mantiene a Ned Munny cautivo y te apunta con su revolver."));
+		"El pasadizo desemboca en una cripta fria. Ned Munny esta atado contra el muro y Little Bill, "
+		"que al parecer confunde la justicia con no dejar testigos, te apunta con su revolver."));
 
 	world.rooms.at(RoomIds::BackCell)->SetDark(true);
 	world.rooms.at(RoomIds::Crypt)->SetDark(true);
@@ -101,21 +110,22 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> whiskyBottle = std::make_shared<Item>(
 		ItemIds::WhiskyBottle,
 		"Botella de whisky vacia",
-		"Una botella vacia con una etiqueta casi borrada.");
+		"Una botella vacia con la etiqueta casi borrada. No resolvera el misterio, pero resume bastante bien el pueblo.");
 	whiskyBottle->AddAlias("botella");
 	whiskyBottle->AddAlias("whisky");
 
 	std::shared_ptr<Item> tornMap = std::make_shared<Item>(
 		ItemIds::TornMap,
 		"Mapa rasgado",
-		"Un mapa incompleto del pueblo. Aun se distinguen la iglesia, el saloon y la oficina del sheriff.");
+		"Un mapa incompleto de Yellowville. Le falta una esquina y le sobra polvo, pero aun distingue la iglesia, "
+		"el saloon y la oficina del sheriff. Para ser papel mojado, sabe bastante.");
 	tornMap->AddAlias("mapa");
 	tornMap->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> lantern = std::make_shared<Item>(
 		ItemIds::Lantern,
 		"Farol",
-		"Un farol viejo que aun conserva algo de combustible.");
+		"Un farol viejo con combustible suficiente. Una extravagancia tecnologica para quien prefiera ver el peligro venir.");
 	lantern->AddAlias("farol");
 	lantern->AddAlias("lampara");
 	lantern->AddAlias("linterna");
@@ -124,19 +134,19 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> matches = std::make_shared<Item>(
 		ItemIds::Matches,
 		"Cerillas",
-		"Una pequena caja de cerillas humedecida por fuera.");
+		"Una pequena caja de cerillas humedecida por fuera. Por dentro, milagrosamente, algunas siguen secas.");
 	matches->AddAlias("cerilla");
 
 	std::shared_ptr<Item> boltCutter = std::make_shared<Item>(
 		ItemIds::BoltCutter,
 		"Cizalla oxidada",
-		"Una cizalla pesada con las hojas comidas por el oxido.");
+		"Una cizalla pesada con las hojas comidas por el oxido. Fea, incomoda y mucho mas convincente que una llave.");
 	boltCutter->AddAlias("cizalla");
 
 	std::shared_ptr<Item> potatoSack = std::make_shared<Item>(
 		ItemIds::PotatoSack,
 		"Saco de patatas podridas",
-		"Un saco de arpillera lleno de patatas podridas. El olor resulta insoportable.");
+		"Un saco de arpillera lleno de patatas podridas. El olor podria desalojar el pueblo si el pueblo no estuviera ya desalojado.");
 	potatoSack->AddAlias("saco");
 	potatoSack->AddAlias("saco de patatas");
 	potatoSack->AddAlias("patatas");
@@ -145,14 +155,16 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> smallKey = std::make_shared<Item>(
 		ItemIds::SmallKey,
 		"Llave pequena",
-		"Una llave pequena de hierro ennegrecido.");
+		"Una llave pequena de hierro ennegrecido. En Yellowville, las llaves pequenas suelen proteger secretos grandes. "
+		"O cajones mediocres. Emocionante, en cualquier caso.");
 	smallKey->AddAlias("llave");
 	smallKey->AddAlias("llave pequena");
 
 	std::shared_ptr<Item> bartenderNote = std::make_shared<Item>(
 		ItemIds::BartenderNote,
 		"Nota del tabernero",
-		"La nota dice: \"El sheriff se lleva a cualquiera que hace preguntas. Anoche oi a un hombre llamado Ned Munny gritar desde la celda trasera de su oficina.\"");
+		"La nota esta escrita deprisa: \"Little Bill se lleva a cualquiera que haga demasiadas preguntas. "
+		"Anoche oi a Ned Munny gritar desde la celda trasera de su oficina. Si alguien encuentra esto, que no confie en la placa.\"");
 	bartenderNote->AddAlias("nota");
 	bartenderNote->AddAlias("nota del tabernero");
 	bartenderNote->SetRequiresLightToExamine(true);
@@ -160,7 +172,8 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> safeBox = std::make_shared<Item>(
 		ItemIds::SafeBox,
 		"Caja fuerte",
-		"Una caja fuerte compacta detras de la barra. La cerradura parece pequena.");
+		"Una caja fuerte compacta tras la barra. La cerradura es pequena y casi parece pedir una llave pequena. "
+		"El suspense tiene dias poco inspirados.");
 	safeBox->AddAlias("caja");
 	safeBox->AddAlias("cerradura");
 	safeBox->AddAlias("cerradura de la caja fuerte");
@@ -173,33 +186,37 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> revolver = std::make_shared<Item>(
 		ItemIds::Revolver,
 		"Revolver",
-		"Un revolver frio al tacto, con el tambor listo para recibir municion.");
+		"Un revolver bien cuidado, frio al tacto y sin una sola bala en el tambor. La parte de disparar se vende por separado.");
 	revolver->AddAlias("revolver");
 	revolver->SetLoadState(LoadState::Unloaded);
 
 	std::shared_ptr<Item> ammunition = std::make_shared<Item>(
 		ItemIds::Ammunition,
 		"Municion",
-		"Unas pocas balas envueltas en papel aceitado.");
+		"Unas pocas balas envueltas en papel aceitado. Justo lo que le falta a un revolver descargado. Casualidades del Oeste.");
 	ammunition->AddAlias("balas");
 
 	std::shared_ptr<Item> sheriffDiary = std::make_shared<Item>(
 		ItemIds::SheriffDiary,
 		"Diario del sheriff",
-		"Una entrada reciente dice: \"He trasladado a Ned Munny a la cripta bajo la iglesia. Oculte en la celda la cruz de plata que abre la cerradura del muro norte.\"");
+		"Una entrada reciente dice: \"He llevado a Ned Munny a la cripta bajo la iglesia. "
+		"La cruz de plata que abre el muro norte queda oculta en la celda. Al amanecer, Yellowville tendra un problema menos.\" "
+		"Little Bill escribe sus crimenes con una caligrafia impecable. Todo un profesional.");
 	sheriffDiary->AddAlias("diario");
 	sheriffDiary->SetRequiresLightToExamine(true);
 
 	std::shared_ptr<Item> silverCross = std::make_shared<Item>(
 		ItemIds::SilverCross,
 		"Cruz de plata",
-		"Una cruz de plata pequena, demasiado limpia para este lugar.");
+		"Una cruz de plata pequena, demasiado limpia para esta celda. Sus bordes tienen la forma precisa de una llave, "
+		"porque hasta la Iglesia disfruta complicando las puertas.");
 	silverCross->AddAlias("cruz");
 
 	std::shared_ptr<Item> nedMunnyHat = std::make_shared<Item>(
 		ItemIds::NedMunnyHat,
 		"Sombrero de Ned Munny",
-		"El sombrero de tu hermano. Reconocerias esa cinta azul en cualquier parte.");
+		"El sombrero de Ned. Reconocerias esa cinta azul en cualquier parte y esa mancha de whisky en dos condados. "
+		"Tu hermano estuvo aqui, y no parece que se marchara por voluntad propia.");
 	nedMunnyHat->AddAlias("sombrero");
 
 	AddItem(world, whiskyBottle);

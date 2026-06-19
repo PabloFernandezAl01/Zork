@@ -160,6 +160,7 @@ GameResult GameWorld::Look(std::ostream& output) const
 
 	if (CanPlayerSee(*room))
 	{
+		output << "Estas en: ";
 		room->PrintInformation(output);
 	}
 	else

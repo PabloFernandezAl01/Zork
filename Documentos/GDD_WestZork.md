@@ -1,7 +1,6 @@
 # GDD de referencia — West Zork / mi version del juego Zork
 
-Este documento tiene solo la información relevante al gameplay de mi version. El resto de características del juego ya se explican en el GDD pero solo se van a implementar las
-features que se mencionan aquí. 
+Este documento tiene solo la información relevante al gameplay de mi version.
 
 `West Zork` es el titulo del juego. `Yellowville` es el nombre del pueblo en el que se desarrolla la historia.
 

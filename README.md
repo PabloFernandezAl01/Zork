@@ -13,7 +13,7 @@ estado, oscuridad y fuentes de luz, accesos bloqueados, puzles y condiciones de
 victoria y derrota.
 
 El diseño completo del juego se encuentra en el
-[GDD de West Zork](Zork/Documentos/GDD_WestZork.md).
+[GDD de West Zork](Documentos/GDD_WestZork.md).
 
 ## Autor
 
@@ -64,7 +64,7 @@ municion` como `cargar revolver`.
 
 ### Imagen del mapa para orientarse
 
-[Mapa de Yellowville](Zork/Documentos/Mapa.png).
+[Mapa de Yellowville](Documentos/Mapa.png).
 
 ## Guía para completar el juego
 
@@ -122,7 +122,7 @@ C++11/C++14 y sin librerías de terceros.
 
 Los detalles completos de arquitectura, ownership y decisiones técnicas se
 encuentran en
-[Implementación y arquitectura](Zork/Documentos/Implementacion.md).
+[Implementación y arquitectura](Documentos/Implementacion.md).
 
 ## Licencia
 

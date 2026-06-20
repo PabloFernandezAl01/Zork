@@ -49,7 +49,7 @@ public:
 	void PrintInformation(std::ostream& output) const override;
 
 	// Prints the names and directions of the rooms connected to the current room.
-	void PrintExists(std::ostream& output) const;
+	void PrintExits(std::ostream& output) const;
 
 	void AddExit(Direction direction, const Room& targetRoom, bool locked = false);
 

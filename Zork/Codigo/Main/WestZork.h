@@ -9,6 +9,8 @@ class WestZork
 public:
 
 	WestZork();
+	WestZork(const WestZork&) = delete;
+	WestZork& operator=(const WestZork&) = delete;
 	void Run();
 
 private:

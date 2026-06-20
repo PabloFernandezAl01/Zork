@@ -30,6 +30,8 @@ class GameWorld
 public:
 
 	GameWorld();
+	GameWorld(const GameWorld&) = delete;
+	GameWorld& operator=(const GameWorld&) = delete;
 
 	// Entry point for the class, called from WestZork::Run()
 	GameResult ExecuteCommand(const Command& command, std::ostream& output);

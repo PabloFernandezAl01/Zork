@@ -94,7 +94,7 @@ void Room::PrintInformation(std::ostream& output) const
 	}
 }
 
-void Room::PrintExists(std::ostream& output) const
+void Room::PrintExits(std::ostream& output) const
 {
 	if (m_exits.empty())
 	{

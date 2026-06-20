@@ -64,8 +64,5 @@ void WestZork::Run()
 		std::cout << "La partida ha terminado por un error interno. Ni siquiera Yellowville\n";
 		std::cout << "puede fingir que esto formaba parte del plan.\n";
 		break;
-	case GameResult::Running:
-		std::cout << "Fin de la partida. Una conclusion tecnicamente correcta y narrativamente deplorable.\n";
-		break;
 	}
 }

@@ -26,9 +26,6 @@ public:
 
 	virtual void PrintInformation(std::ostream& output) const = 0;
 
-	void SetName(const std::string& name);
-	void SetDescription(const std::string& description);
-
 private:
 
 	std::string m_id;

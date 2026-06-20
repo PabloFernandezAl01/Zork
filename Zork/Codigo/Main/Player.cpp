@@ -58,11 +58,6 @@ const Item* Player::FindItemById(const std::string& itemId) const
 	return it != m_inventory.end() ? it->get() : nullptr;
 }
 
-bool Player::HasItemById(const std::string& itemId) const
-{
-	return FindItemById(itemId) != nullptr;
-}
-
 bool Player::HasTurnedOnLightSource() const
 {
 	return std::any_of(m_inventory.cbegin(), m_inventory.cend(),

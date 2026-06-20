@@ -29,13 +29,3 @@ void Entity::PrintInformation(std::ostream& output) const
 	output << m_name << '\n';
 	output << m_description << '\n';
 }
-
-void Entity::SetName(const std::string& name)
-{
-	m_name = name;
-}
-
-void Entity::SetDescription(const std::string& description)
-{
-	m_description = description;
-}

@@ -9,7 +9,7 @@ WestZork::WestZork() {}
 
 void WestZork::Run()
 {
-	std::cout << "-------------------------- WEST ZORK ------------------------------\n\n";
+	std::cout << "------------------------------------------- WEST ZORK ---------------------------------------------\n\n";
 	for (const char* artChunk : Presentation::WestZorkAsciiArt)
 	{
 		std::cout << artChunk;
@@ -64,5 +64,14 @@ void WestZork::Run()
 		std::cout << "La partida ha terminado por un error interno. Ni siquiera Yellowville\n";
 		std::cout << "puede fingir que esto formaba parte del plan.\n";
 		break;
+	}
+
+	// Keep the console open when the executable was launched directly. (So the final message is shown)
+	// If the input stream was closed, such as in a redirected execution, exit immediately.
+	if (std::cin.good())
+	{
+		std::cout << "\nPulsa Intro para cerrar...";
+		std::string input;
+		std::getline(std::cin, input);
 	}
 }

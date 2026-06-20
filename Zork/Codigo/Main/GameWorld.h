@@ -79,7 +79,7 @@ private:
 	GameResult Open(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult OpenItem(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult Unlock(ScenarioTarget target, const std::string& toolTarget, std::ostream& output);
-	GameResult TurnOnItem(const std::string& target, std::ostream& output);
+	GameResult TurnOnItem(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult LoadItem(const std::string& target, const std::string& ammunitionTarget, std::ostream& output);
 	GameResult BreakObstacle(const std::string& target, const std::string& toolTarget, std::ostream& output);
 	GameResult ShootTarget(const std::string& target, const std::string& weaponTarget, std::ostream& output);

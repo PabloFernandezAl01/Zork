@@ -43,7 +43,7 @@ GameResult GameWorld::ExecuteCommand(const Command& command, std::ostream& outpu
 	case CommandType::Open:
 		return Open(command.firstTarget, command.secondTarget, output);
 	case CommandType::TurnOn:
-		return TurnOnItem(command.firstTarget, output);
+		return TurnOnItem(command.firstTarget, command.secondTarget, output);
 	case CommandType::Load:
 		return LoadItem(command.firstTarget, command.secondTarget, output);
 	case CommandType::Break:
@@ -197,7 +197,7 @@ GameResult GameWorld::MovePlayer(Direction direction, std::ostream& output)
 
 	if (exit->isLocked)
 	{
-		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado. Quizá necesites hacer algo para pasar...\n";
+		output << "El paso hacia " << nextRoom->GetName() << " esta bloqueado. Quiza necesites hacer algo para pasar...\n";
 		return GameResult::Running;
 	}
 
@@ -705,7 +705,7 @@ GameResult GameWorld::Unlock(ScenarioTarget target, const std::string& toolTarge
 	return GameResult::Running;
 }
 
-GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output)
+GameResult GameWorld::TurnOnItem(const std::string& target, const std::string& toolTarget, std::ostream& output)
 {
 	const Room* room = GetCurrentRoom();
 	assert(room != nullptr);
@@ -734,8 +734,9 @@ GameResult GameWorld::TurnOnItem(const std::string& target, std::ostream& output
 		return GameResult::Running;
 	}
 
-	// The item used to turn on the light source item must also be in player's inventory
-	if (!m_player.HasItemById(ItemIds::Matches))
+	// Allow both "encender farol" and the explicit "encender farol con cerillas".
+	const Item* matches = toolTarget.empty() ? m_player.FindItemById(ItemIds::Matches) : m_player.FindItem(toolTarget);
+	if (matches == nullptr || matches->GetId() != ItemIds::Matches)
 	{
 		output << "Necesitas algo con lo que encender " << item->GetName() << ".\n";
 		return GameResult::Running;
@@ -890,7 +891,7 @@ GameResult GameWorld::ShowHelp(std::ostream& output) const
 	output << "Comandos disponibles:\n";
 	output << "- Movimiento: norte/n, sur/s, este/e, oeste/o\n";
 	output << "- Observacion: mirar/m, examinar/x [objeto]\n";
-	output << "- Inventario: inventario/i, coger [objeto], soltar [objeto]\n";
+	output << "- Inventario: inventario/i, coger [objeto], soltar/tirar [objeto]\n";
 	output << "- Contenedores: meter [objeto] en [contenedor], sacar [objeto] de [contenedor]\n";
 	output << "- Acciones: abrir [objeto], encender [objeto], cargar [objeto]\n";
 	output << "- Puzles: romper [objeto] con [herramienta], disparar [objetivo]\n";

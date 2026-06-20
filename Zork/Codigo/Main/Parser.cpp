@@ -65,7 +65,7 @@ Command Parser::Parse(const std::string& input) const
 		return command;
 	}
 
-	if ((verb == "examinar" || verb == "x") && tokens.size() >= 2)
+	if ((verb == "examinar" || verb == "x" || verb == "mirar") && tokens.size() >= 2)
 	{
 		if (TryParseSingleTargetCommand(tokens, CommandType::Examine, command))
 		{
@@ -81,7 +81,7 @@ Command Parser::Parse(const std::string& input) const
 		}
 	}
 
-	if (verb == "soltar" && tokens.size() >= 2)
+	if ((verb == "soltar" || verb == "tirar") && tokens.size() >= 2)
 	{
 		if (TryParseSingleTargetCommand(tokens, CommandType::Drop, command))
 		{
@@ -116,7 +116,8 @@ Command Parser::Parse(const std::string& input) const
 
 	if (verb == "encender")
 	{
-		if (TryParseSingleTargetCommand(tokens, CommandType::TurnOn, command))
+		if (TryParseTwoTargetCommand(tokens, "con", CommandType::TurnOn, command) ||
+			TryParseSingleTargetCommand(tokens, CommandType::TurnOn, command))
 		{
 			return command;
 		}

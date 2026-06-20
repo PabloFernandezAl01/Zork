@@ -117,8 +117,7 @@ void WorldBuilder::InitializeItems(WorldData& world)
 	std::shared_ptr<Item> tornMap = std::make_shared<Item>(
 		ItemIds::TornMap,
 		"Mapa rasgado",
-		"Un mapa incompleto de Yellowville. Le falta una esquina y le sobra polvo, pero aun distingue la iglesia, "
-		"el saloon y la oficina del sheriff. Para ser papel mojado, sabe bastante.");
+		"Un mapa incompleto de Yellowville. Le falta una esquina y le sobra polvo, pero aun distinguen ciertas ubicaciones. Para ser papel mojado, sabe bastante.");
 	tornMap->AddAlias("mapa");
 	tornMap->SetRequiresLightToExamine(true);
 
@@ -145,8 +144,8 @@ void WorldBuilder::InitializeItems(WorldData& world)
 
 	std::shared_ptr<Item> potatoSack = std::make_shared<Item>(
 		ItemIds::PotatoSack,
-		"Saco de patatas podridas",
-		"Un saco de arpillera lleno de patatas podridas. El olor podria desalojar el pueblo si el pueblo no estuviera ya desalojado.");
+		"Saco usado",
+		"Un saco de arpillera usado que todavia apesta a patatas podridas. El olor podria desalojar el pueblo si el pueblo no estuviera ya desalojado.");
 	potatoSack->AddAlias("saco");
 	potatoSack->AddAlias("saco de patatas");
 	potatoSack->AddAlias("patatas");

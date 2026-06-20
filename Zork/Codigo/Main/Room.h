@@ -37,6 +37,7 @@ public:
 
 	Item* FindItem(const std::string& target);
 	const Item* FindItem(const std::string& target) const;
+	bool HasTurnedOnLightSource() const;
 
 	/*
 	*  Prints to the output the info of the item:

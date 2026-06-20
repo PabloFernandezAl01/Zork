@@ -433,6 +433,12 @@ GameResult GameWorld::PutItemIntoContainer(const std::string& itemTarget, const 
 		return GameResult::Running;
 	}
 
+	if (item->IsLightSource() && item->IsTurnedOn())
+	{
+		output << "No puedes guardar " << item->GetName() << " mientras esta encendido.\n";
+		return GameResult::Running;
+	}
+
 	const std::shared_ptr<Item> removedItem = m_player.RemoveItemFromInventory(item->GetId());
 	assert(removedItem != nullptr);
 	if (removedItem == nullptr)
@@ -917,7 +923,5 @@ bool GameWorld::CanPlayerSee(const Room& room) const
 		return true;
 	}
 
-	// In WestZork a light source only illuminates the room while the player is
-	// carrying it. A lit lantern left on the ground does not provide visibility.
-	return m_player.HasTurnedOnLightSource();
+	return m_player.HasTurnedOnLightSource() || room.HasTurnedOnLightSource();
 }

@@ -66,6 +66,16 @@ const Item* Room::FindItem(const std::string& target) const
 	return it != m_items.end() ? it->get() : nullptr;
 }
 
+bool Room::HasTurnedOnLightSource() const
+{
+	return std::any_of(m_items.cbegin(), m_items.cend(),
+		[](const std::shared_ptr<Item>& item)
+		{
+			const Item& readOnlyItem = *item;
+			return readOnlyItem.IsLightSource() && readOnlyItem.IsTurnedOn();
+		});
+}
+
 void Room::PrintInformation(std::ostream& output) const
 {
 	Entity::PrintInformation(output);
